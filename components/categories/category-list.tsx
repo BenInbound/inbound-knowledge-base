@@ -25,7 +25,7 @@ export default function CategoryList({
           {emptyMessage}
         </h3>
         <p className="text-sm text-primary-600 max-w-md">
-          Categories help organize content and make it easier to find what you're looking for.
+          Categories help organize content and make it easier to find what you&apos;re looking for.
         </p>
       </div>
     );

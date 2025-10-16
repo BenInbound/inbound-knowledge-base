@@ -313,6 +313,11 @@ export function isValidSlug(slug: string): boolean {
 }
 
 /**
+ * Alias for slugify to maintain backward compatibility
+ */
+export { slugify as generateSlug };
+
+/**
  * Group an array of objects by a key
  */
 export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
