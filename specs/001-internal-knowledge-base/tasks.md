@@ -118,10 +118,10 @@
 
 ### Navigation & Layout
 
-- [ ] T053 [US1] Create protected route layout with navigation in app/(protected)/layout.tsx
-- [ ] T054 [P] [US1] Create main navigation component in components/navigation/main-nav.tsx
-- [ ] T055 [P] [US1] Create sidebar with category tree in components/navigation/sidebar.tsx
-- [ ] T056 [P] [US1] Create breadcrumb navigation component in components/navigation/breadcrumbs.tsx
+- [X] T053 [US1] Create protected route layout with navigation in app/(protected)/layout.tsx
+- [X] T054 [P] [US1] Create main navigation component in components/navigation/main-nav.tsx
+- [X] T055 [P] [US1] Create sidebar with category tree in components/navigation/sidebar.tsx
+- [X] T056 [P] [US1] Create breadcrumb navigation component in components/navigation/breadcrumbs.tsx
 
 ### Home & Category Browsing
 
