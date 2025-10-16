@@ -8,19 +8,19 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-tt-hoves)", "system-ui", "sans-serif"],
+        sans: ["var(--font-tt-norms)", "system-ui", "sans-serif"],
       },
       colors: {
         // Inbound design system colors (to be extracted from Figma)
         primary: {
           50: "#faf8f5",
-          100: "#f5f1ea",
-          200: "#ebe3d5",
+          100: "#e3f3f4",
+          200: "#e0e0e0",
           300: "#e0d5c0",
           400: "#d6c7ab",
-          500: "#ccb996",
-          600: "#a39478",
-          700: "#7a6f5a",
+          500: "#374151",
+          600: "#111827",
+          700: "#111827",
           800: "#524a3c",
           900: "#29251e",
         },

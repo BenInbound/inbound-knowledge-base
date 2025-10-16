@@ -55,7 +55,7 @@ export function ArticleRenderer({ content }: ArticleRendererProps) {
 
         .article-content .ProseMirror h1 {
           font-size: 2.25rem;
-          font-weight: 700;
+          font-weight: 500;
           margin-top: 2rem;
           margin-bottom: 1rem;
           color: #111827;

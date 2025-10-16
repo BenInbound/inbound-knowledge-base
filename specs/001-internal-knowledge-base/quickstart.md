@@ -186,7 +186,7 @@ const config: Config = {
         // Inbound design system colors (extract from Figma)
         primary: {
           50: "#faf8f5",
-          100: "#f5f1ea",
+          100: "#e3f3f4",
           // ... add full palette
         },
         accent: {

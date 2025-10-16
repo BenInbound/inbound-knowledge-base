@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import { ErrorBoundaryWrapper } from '@/components/error-boundary';
 
 export const metadata: Metadata = {
@@ -17,26 +18,22 @@ export default function AuthLayout({
 }) {
   return (
     <div className="min-h-screen bg-primary-50 flex flex-col">
-      {/* Header with branding */}
-      <header className="w-full py-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md mx-auto">
-          <div className="flex items-center gap-3">
-            {/* Inbound logo placeholder - replace with actual logo */}
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary-900 text-white font-bold text-xl">
-              i
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-primary-900">Inbound</h1>
-              <p className="text-xs text-primary-600">Knowledge Base</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main content area */}
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-lg shadow-md border border-primary-200 p-8">
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <Image
+                src="/inboundnett.svg"
+                alt="Inbound"
+                width={180}
+                height={40}
+                className="h-10 w-auto"
+                priority
+              />
+            </div>
+
             <ErrorBoundaryWrapper>
               {children}
             </ErrorBoundaryWrapper>

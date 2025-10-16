@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, PlusCircle, HelpCircle, User, LogOut } from 'lucide-react';
+import { Search, PlusCircle, HelpCircle, User, LogOut, FolderTree } from 'lucide-react';
 import type { User as AuthUser } from '@/lib/types/auth';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/auth/actions';
@@ -34,28 +34,25 @@ export default function MainNav({ user }: MainNavProps) {
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
         {/* Logo and Brand */}
         <div className="flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-primary-900 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">IK</span>
-            </div>
-            <span className="text-xl font-semibold text-primary-900">
-              Inbound Knowledge
-            </span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/inboundnett.svg"
+              alt="Inbound"
+              width={158}
+              height={32}
+              className="w-[158px] h-auto"
+              priority
+            />
           </Link>
 
           {/* Primary Navigation Links */}
           <nav className="hidden md:flex items-center gap-6">
             <Link
-              href="/"
-              className="text-sm font-medium text-primary-700 hover:text-primary-900 transition-colors"
+              href="/admin/categories"
+              className="text-sm font-medium text-primary-700 hover:text-primary-900 transition-colors flex items-center gap-1"
             >
-              Home
-            </Link>
-            <Link
-              href="/search"
-              className="text-sm font-medium text-primary-700 hover:text-primary-900 transition-colors"
-            >
-              Search
+              <FolderTree className="h-4 w-4" />
+              Categories
             </Link>
             <Link
               href="/qa"

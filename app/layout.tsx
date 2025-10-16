@@ -2,25 +2,15 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from 'sonner';
 
-const ttHoves = localFont({
+const ttNorms = localFont({
   src: [
     {
-      path: "../public/fonts/TT_Hoves_Pro_Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/TT_Hoves_Pro_Expanded_Medium.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/TT_Hoves_Pro_Expanded_Black.woff2",
-      weight: "700",
+      path: "../public/fonts/TT-Norms-Pro-Regular.ttf",
+      weight: "400 500 600 700",
       style: "normal",
     },
   ],
-  variable: "--font-tt-hoves",
+  variable: "--font-tt-norms",
 });
 
 export const metadata = {
@@ -34,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={ttHoves.variable}>
+    <html lang="en" className={ttNorms.variable}>
       <body className="font-sans antialiased">
         {children}
         <Toaster position="top-right" richColors />

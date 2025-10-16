@@ -1,7 +1,6 @@
-import Link from 'next/link';
-import { FolderOpen, ChevronRight, ChevronDown, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import type { CategoryTreeNode } from '@/lib/types/database';
+import { SidebarClient } from './sidebar-client';
 
 /**
  * Build hierarchical category tree from flat list
@@ -82,104 +81,9 @@ async function getCategories(): Promise<CategoryTreeNode[]> {
 }
 
 /**
- * Recursive category tree item component
- */
-function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
-  const hasChildren = category.children.length > 0;
-  const indent = category.depth * 16; // 16px per level
-
-  return (
-    <li>
-      <Link
-        href={`/categories/${category.id}`}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-primary-700 hover:bg-primary-100 hover:text-primary-900 rounded-md transition-colors group"
-        style={{ paddingLeft: `${12 + indent}px` }}
-      >
-        {hasChildren ? (
-          <ChevronRight className="h-4 w-4 text-primary-400 group-hover:text-primary-600 flex-shrink-0" />
-        ) : (
-          <div className="h-4 w-4 flex-shrink-0" /> // Spacer for alignment
-        )}
-        <FolderOpen className="h-4 w-4 text-primary-500 flex-shrink-0" />
-        <span className="flex-1 truncate font-medium">{category.name}</span>
-        {category.article_count > 0 && (
-          <span className="text-xs text-primary-500 bg-primary-100 px-2 py-0.5 rounded-full">
-            {category.article_count}
-          </span>
-        )}
-      </Link>
-
-      {hasChildren && (
-        <ul className="space-y-1">
-          {category.children.map((child) => (
-            <CategoryTreeItem key={child.id} category={child} />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
-}
-
-/**
- * Sidebar component with category navigation
+ * Sidebar component with category navigation (Server Component)
  */
 export default async function Sidebar() {
   const categories = await getCategories();
-
-  return (
-    <aside className="w-64 min-h-screen bg-white border-r border-primary-200 p-4">
-      <div className="space-y-6">
-        {/* Categories Section */}
-        <div>
-          <h2 className="text-xs font-semibold text-primary-600 uppercase tracking-wider mb-3 px-3">
-            Categories
-          </h2>
-
-          {categories.length > 0 ? (
-            <nav>
-              <ul className="space-y-1">
-                {categories.map((category) => (
-                  <CategoryTreeItem key={category.id} category={category} />
-                ))}
-              </ul>
-            </nav>
-          ) : (
-            <div className="px-3 py-6 text-center text-sm text-primary-500">
-              <FolderOpen className="h-8 w-8 mx-auto mb-2 text-primary-300" />
-              <p>No categories yet</p>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Links Section */}
-        <div className="pt-6 border-t border-primary-200">
-          <h2 className="text-xs font-semibold text-primary-600 uppercase tracking-wider mb-3 px-3">
-            Quick Links
-          </h2>
-          <nav>
-            <ul className="space-y-1">
-              <li>
-                <Link
-                  href="/articles"
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-primary-700 hover:bg-primary-100 hover:text-primary-900 rounded-md transition-colors"
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>All Articles</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/articles/new"
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-primary-700 hover:bg-primary-100 hover:text-primary-900 rounded-md transition-colors"
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>My Drafts</span>
-                </Link>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-    </aside>
-  );
+  return <SidebarClient categories={categories} />;
 }
