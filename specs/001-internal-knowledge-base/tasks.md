@@ -93,16 +93,16 @@
 
 ### Implementation for User Story 2
 
-- [ ] T043 [US2] Create login page UI in app/(auth)/login/page.tsx
-- [ ] T044 [US2] Create signup page UI in app/(auth)/signup/page.tsx
-- [ ] T045 [US2] Create auth layout with branding in app/(auth)/layout.tsx
-- [ ] T046 [P] [US2] Implement login form with email/password in components/auth/login-form.tsx
-- [ ] T047 [P] [US2] Implement signup form with email validation in components/auth/signup-form.tsx
-- [ ] T048 [US2] Add client-side email domain validation (@inbound.no) to signup form
-- [ ] T049 [US2] Create auth callback handler in app/auth/callback/route.ts
-- [ ] T050 [US2] Add error handling for invalid domain attempts with user-friendly messages
-- [ ] T051 [US2] Create auth helper functions (login, signup, logout) in lib/auth/actions.ts
-- [ ] T052 [US2] Test authentication flow end-to-end (signup, email verification, login, logout)
+- [X] T043 [US2] Create login page UI in app/(auth)/login/page.tsx
+- [X] T044 [US2] Create signup page UI in app/(auth)/signup/page.tsx
+- [X] T045 [US2] Create auth layout with branding in app/(auth)/layout.tsx
+- [X] T046 [P] [US2] Implement login form with email/password in components/auth/login-form.tsx
+- [X] T047 [P] [US2] Implement signup form with email validation in components/auth/signup-form.tsx
+- [X] T048 [US2] Add client-side email domain validation (@inbound.no) to signup form
+- [X] T049 [US2] Create auth callback handler in app/auth/callback/route.ts
+- [X] T050 [US2] Add error handling for invalid domain attempts with user-friendly messages
+- [X] T051 [US2] Create auth helper functions (login, signup, logout) in lib/auth/actions.ts
+- [X] T052 [US2] Test authentication flow end-to-end (signup, email verification, login, logout)
 
 **Checkpoint**: Authentication working - users with @inbound.no can now access protected routes
 
