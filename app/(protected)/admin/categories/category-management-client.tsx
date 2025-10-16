@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +23,7 @@ interface CategoryManagementClientProps {
 export default function CategoryManagementClient({
   initialCategories,
 }: CategoryManagementClientProps) {
+  const router = useRouter();
   const [categories, setCategories] = useState<CategoryWithCount[]>(initialCategories);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -69,6 +71,9 @@ export default function CategoryManagementClient({
       // Add to categories list with article count
       setCategories([...categories, { ...newCategory, article_count: 0 }]);
       setIsCreateModalOpen(false);
+
+      // Refresh server components (sidebar) to show new category
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create category');
     } finally {
@@ -115,6 +120,9 @@ export default function CategoryManagementClient({
       );
       setIsEditModalOpen(false);
       setSelectedCategory(null);
+
+      // Refresh server components (sidebar) to show updated category
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update category');
     } finally {
@@ -199,6 +207,9 @@ export default function CategoryManagementClient({
       setIsDeleteModalOpen(false);
       setSelectedCategory(null);
       setTargetCategoryId('');
+
+      // Refresh server components (sidebar) to show updated hierarchy
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete category');
     } finally {
