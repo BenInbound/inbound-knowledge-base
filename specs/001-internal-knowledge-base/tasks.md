@@ -125,11 +125,11 @@
 
 ### Home & Category Browsing
 
-- [ ] T057 [US1] Create home/dashboard page in app/(protected)/page.tsx
-- [ ] T058 [US1] Create category list view component in components/categories/category-list.tsx
-- [ ] T059 [US1] Create category card component in components/categories/category-card.tsx
-- [ ] T060 [US1] Create category detail page in app/(protected)/categories/[id]/page.tsx
-- [ ] T061 [US1] Fetch and display articles for a category with Server Components
+- [X] T057 [US1] Create home/dashboard page in app/(protected)/page.tsx
+- [X] T058 [US1] Create category list view component in components/categories/category-list.tsx
+- [X] T059 [US1] Create category card component in components/categories/category-card.tsx
+- [X] T060 [US1] Create category detail page in app/(protected)/categories/[id]/page.tsx
+- [X] T061 [US1] Fetch and display articles for a category with Server Components
 
 ### Article Viewing
 
