@@ -345,36 +345,36 @@
 
 ### Error Handling & Validation
 
-- [ ] T161 [P] Add comprehensive error boundaries to all main pages
-- [ ] T162 [P] Implement global error handling for API routes
-- [ ] T163 [P] Add input validation error messages to all forms
-- [ ] T164 [P] Create 404 page in app/not-found.tsx
-- [ ] T165 [P] Create error page in app/error.tsx
+- [X] T161 [P] Add comprehensive error boundaries to all main pages
+- [X] T162 [P] Implement global error handling for API routes
+- [X] T163 [P] Add input validation error messages to all forms
+- [X] T164 [P] Create 404 page in app/not-found.tsx
+- [X] T165 [P] Create error page in app/error.tsx
 
 ### Performance Optimization
 
-- [ ] T166 [P] Add loading skeletons to all data-fetching pages
-- [ ] T167 [P] Implement pagination for article lists (20 per page)
-- [ ] T168 [P] Add React.lazy for code splitting on heavy components
-- [ ] T169 [P] Optimize images with Next.js Image component
-- [ ] T170 [P] Add search query debouncing (300ms)
-- [ ] T171 [P] Enable Vercel Edge caching for search results
+- [X] T166 [P] Add loading skeletons to all data-fetching pages
+- [X] T167 [P] Implement pagination for article lists (20 per page)
+- [X] T168 [P] Add React.lazy for code splitting on heavy components
+- [X] T169 [P] Optimize images with Next.js Image component
+- [X] T170 [P] Add search query debouncing (300ms)
+- [X] T171 [P] Enable Vercel Edge caching for search results
 
 ### Security Hardening
 
-- [ ] T172 [P] Sanitize TipTap editor output to prevent XSS
-- [ ] T173 [P] Add rate limiting to API routes
-- [ ] T174 [P] Implement CSRF protection for forms
-- [ ] T175 [P] Add security headers in next.config.js
-- [ ] T176 [P] Review and test all RLS policies
+- [X] T172 [P] Sanitize TipTap editor output to prevent XSS
+- [X] T173 [P] Add rate limiting to API routes
+- [X] T174 [P] Implement CSRF protection for forms
+- [X] T175 [P] Add security headers in next.config.js
+- [X] T176 [P] Review and test all RLS policies
 
 ### User Experience
 
-- [ ] T177 [P] Add toast notifications for success/error actions
-- [ ] T178 [P] Implement keyboard shortcuts (Cmd+K for search)
-- [ ] T179 [P] Add responsive design testing for mobile devices
-- [ ] T180 [P] Create empty states for lists with no content
-- [ ] T181 [P] Add confirmation dialogs for destructive actions
+- [X] T177 [P] Add toast notifications for success/error actions
+- [X] T178 [P] Implement keyboard shortcuts (Cmd+K for search)
+- [X] T179 [P] Add responsive design testing for mobile devices
+- [X] T180 [P] Create empty states for lists with no content
+- [X] T181 [P] Add confirmation dialogs for destructive actions
 
 ### Documentation
 

@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createArticleSchema } from '@/lib/validation/schemas';
 import { slugify } from '@/lib/utils/helpers';
 import type { ArticleInsert } from '@/lib/types/database';
+import { handleApiError, ApiErrors } from '@/lib/utils/api-error-handler';
+import { createRateLimiter, RateLimitPresets, getRateLimitHeaders } from '@/lib/utils/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,11 +31,7 @@ export async function GET(request: NextRequest) {
         .eq('category_id', categoryId);
 
       if (acError) {
-        console.error('Category filter error:', acError);
-        return NextResponse.json(
-          { error: 'Failed to filter by category' },
-          { status: 500 }
-        );
+        throw acError;
       }
 
       const articleIds = (articleCategories || []).map((ac) => ac.article_id);
@@ -120,11 +118,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (error) {
-      console.error('Articles API error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch articles' },
-        { status: 500 }
-      );
+      throw error;
     }
 
     if (!data || data.length === 0) {
@@ -180,11 +174,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Articles API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -198,29 +188,26 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
+      throw ApiErrors.unauthorized('Please log in to create articles');
+    }
+
+    // Rate limiting for article creation
+    const limiter = createRateLimiter(RateLimitPresets.mutations);
+    const rateLimitResult = limiter(request, user.id);
+
+    if (!rateLimitResult.success) {
+      const headers = getRateLimitHeaders(rateLimitResult);
       return NextResponse.json(
-        { error: 'Unauthorized - Please log in' },
-        { status: 401 }
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429, headers }
       );
     }
 
     // Parse and validate request body
     const body = await request.json();
 
-    // Validate with Zod schema
-    const validationResult = createArticleSchema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: validationResult.error.errors,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { title, slug, content, excerpt, status, category_ids } = validationResult.data;
+    // Validate with Zod schema - will throw ZodError if validation fails
+    const { title, slug, content, excerpt, status, category_ids } = createArticleSchema.parse(body);
 
     // Generate slug if not provided
     const finalSlug = slug || slugify(title);
@@ -244,10 +231,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (checkUnique) {
-        return NextResponse.json(
-          { error: 'Could not generate unique slug. Please try a different title.' },
-          { status: 409 }
-        );
+        throw ApiErrors.conflict('Could not generate unique slug. Please try a different title.');
       }
 
       // Use unique slug
@@ -269,11 +253,7 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (insertError) {
-        console.error('Error creating article:', insertError);
-        return NextResponse.json(
-          { error: 'Failed to create article', details: insertError.message },
-          { status: 500 }
-        );
+        throw insertError;
       }
 
       // Insert article-category relationships
@@ -322,11 +302,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError) {
-      console.error('Error creating article:', insertError);
-      return NextResponse.json(
-        { error: 'Failed to create article', details: insertError.message },
-        { status: 500 }
-      );
+      throw insertError;
     }
 
     // Insert article-category relationships
@@ -354,10 +330,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Articles POST API error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

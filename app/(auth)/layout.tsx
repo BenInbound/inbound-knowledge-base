@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ErrorBoundaryWrapper } from '@/components/error-boundary';
 
 export const metadata: Metadata = {
   title: 'Authentication - Inbound Knowledge Base',
@@ -36,7 +37,9 @@ export default function AuthLayout({
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-lg shadow-md border border-primary-200 p-8">
-            {children}
+            <ErrorBoundaryWrapper>
+              {children}
+            </ErrorBoundaryWrapper>
           </div>
         </div>
       </main>

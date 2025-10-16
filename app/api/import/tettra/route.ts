@@ -16,6 +16,7 @@ import { performDryRun } from '@/lib/import/validation';
 import { importCategories } from '@/lib/import/category-importer';
 import { importArticles } from '@/lib/import/article-importer';
 import type { ParsedImportData, ImportError } from '@/lib/import/types';
+import { createRateLimiter, RateLimitPresets, getRateLimitHeaders } from '@/lib/utils/rate-limit';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
@@ -31,6 +32,18 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate limiting for import operations (very strict)
+    const limiter = createRateLimiter(RateLimitPresets.strict);
+    const rateLimitResult = limiter(request, user.id);
+
+    if (!rateLimitResult.success) {
+      const headers = getRateLimitHeaders(rateLimitResult);
+      return NextResponse.json(
+        { error: 'Too many import requests. Please try again later.' },
+        { status: 429, headers }
+      );
     }
 
     // Check if user is admin

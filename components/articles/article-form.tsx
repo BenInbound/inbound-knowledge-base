@@ -2,13 +2,32 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { TipTapEditor } from '@/components/editor/tiptap-editor';
+import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { slugify, debounce } from '@/lib/utils/helpers';
 import { createArticleSchema } from '@/lib/validation/schemas';
 import type { ArticleContent, Category, ArticleStatus } from '@/lib/types/database';
 import { z } from 'zod';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
+
+// Dynamically import TipTap editor for code splitting (large bundle)
+const TipTapEditor = dynamic(
+  () => import('@/components/editor/tiptap-editor').then((mod) => ({ default: mod.TipTapEditor })),
+  {
+    loading: () => (
+      <div className="border border-gray-300 rounded-lg p-4 min-h-[400px]">
+        <Skeleton className="h-10 w-full mb-4" />
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-3/4 mb-2" />
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-2/3" />
+      </div>
+    ),
+    ssr: false, // Editor should only load on client side
+  }
+);
 
 interface ArticleFormProps {
   userId: string;
@@ -54,7 +73,6 @@ export function ArticleForm({
   );
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Track changes
@@ -135,11 +153,11 @@ export function ArticleForm({
         throw new Error('Failed to save article');
       }
 
-      setSaveMessage('Draft auto-saved');
+      toast.success('Draft auto-saved');
       setHasUnsavedChanges(false);
-      setTimeout(() => setSaveMessage(null), 2000);
     } catch (error) {
       console.error('Auto-save error:', error);
+      // Silent failure for auto-save
     }
   }, [
     autoSave,
@@ -203,7 +221,7 @@ export function ArticleForm({
         }
 
         const result = await response.json();
-        setSaveMessage(
+        toast.success(
           saveStatus === 'published' ? 'Article published!' : 'Draft saved successfully!'
         );
         setHasUnsavedChanges(false);
@@ -222,10 +240,10 @@ export function ArticleForm({
           newErrors[field] = err.message;
         });
         setErrors(newErrors);
+        toast.error('Please fix the validation errors');
       } else {
-        setSaveMessage(
-          error instanceof Error ? error.message : 'Failed to save article. Please try again.'
-        );
+        const errorMessage = error instanceof Error ? error.message : 'Failed to save article. Please try again.';
+        toast.error(errorMessage);
       }
     } finally {
       setIsSaving(false);
@@ -241,19 +259,6 @@ export function ArticleForm({
 
   return (
     <div className="space-y-6">
-      {/* Save status message */}
-      {saveMessage && (
-        <div
-          className={`p-3 rounded-lg ${
-            saveMessage.includes('error') || saveMessage.includes('Failed')
-              ? 'bg-red-50 text-red-700 border border-red-200'
-              : 'bg-green-50 text-green-700 border border-green-200'
-          }`}
-        >
-          {saveMessage}
-        </div>
-      )}
-
       {/* Unsaved changes indicator */}
       {hasUnsavedChanges && (
         <div className="bg-yellow-50 text-yellow-700 border border-yellow-200 p-3 rounded-lg text-sm">

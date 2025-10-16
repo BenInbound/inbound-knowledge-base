@@ -1,10 +1,34 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import type { SearchResult } from '@/lib/types/database';
+import { createRateLimiter, RateLimitPresets, getRateLimitHeaders } from '@/lib/utils/rate-limit';
+
+// Enable Edge Runtime for faster response times
+// Edge functions run closer to users globally and have lower cold start times
+export const runtime = 'edge';
+
+// Cache search results for 60 seconds (stale-while-revalidate pattern)
+export const revalidate = 60;
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Get user for rate limiting (optional authentication)
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Rate limiting for search queries
+    const limiter = createRateLimiter(RateLimitPresets.search);
+    const rateLimitResult = limiter(request, user?.id);
+
+    if (!rateLimitResult.success) {
+      const headers = getRateLimitHeaders(rateLimitResult);
+      return NextResponse.json(
+        { error: 'Too many search requests. Please try again later.' },
+        { status: 429, headers }
+      );
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get('q');
 

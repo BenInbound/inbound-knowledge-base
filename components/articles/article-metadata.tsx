@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import type { ArticleWithRelations } from '@/lib/types/database';
 
@@ -28,9 +29,11 @@ export function ArticleMetadata({ article }: ArticleMetadataProps) {
       {/* Author */}
       <div className="flex items-center gap-2">
         {article.author.avatar_url && (
-          <img
+          <Image
             src={article.author.avatar_url}
             alt={article.author.full_name}
+            width={32}
+            height={32}
             className="w-8 h-8 rounded-full"
           />
         )}

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, PlusCircle, HelpCircle, User, LogOut } from 'lucide-react';
 import type { User as AuthUser } from '@/lib/types/auth';
 import { Button } from '@/components/ui/button';
@@ -103,9 +104,11 @@ export default function MainNav({ user }: MainNavProps) {
             <Link href="/profile">
               <Button variant="ghost" size="icon" className="rounded-full">
                 {user.profile?.avatar_url ? (
-                  <img
+                  <Image
                     src={user.profile.avatar_url}
                     alt={user.profile.full_name}
+                    width={32}
+                    height={32}
                     className="h-8 w-8 rounded-full object-cover"
                   />
                 ) : (

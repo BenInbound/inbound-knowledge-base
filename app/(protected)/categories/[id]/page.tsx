@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatRelativeTime } from '@/lib/utils/helpers';
 import CategoryCard from '@/components/categories/category-card';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface CategoryPageProps {
   params: {
@@ -288,20 +289,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mb-4">
-              <FileText className="w-8 h-8 text-primary-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-primary-900 mb-2">
-              No articles yet
-            </h3>
-            <p className="text-sm text-primary-600 max-w-md mb-4">
-              This category doesn't have any articles yet. Be the first to contribute!
-            </p>
-            <Link href="/articles/new">
-              <Button>Create Article</Button>
-            </Link>
-          </div>
+          <EmptyState
+            icon={<FileText className="w-12 h-12" />}
+            title="No articles yet"
+            description="This category doesn't have any articles yet. Be the first to contribute!"
+            action={{
+              label: 'Create Article',
+              href: '/articles/new'
+            }}
+          />
         )}
       </section>
     </div>

@@ -1,16 +1,21 @@
 'use client';
 
 import { useEditor, EditorContent } from '@tiptap/react';
+import { useMemo } from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import type { ArticleContent } from '@/lib/types/database';
+import { sanitizeTipTapJSON } from '@/lib/utils/sanitize';
 
 interface ArticleRendererProps {
   content: ArticleContent;
 }
 
 export function ArticleRenderer({ content }: ArticleRendererProps) {
+  // Sanitize content before rendering to prevent XSS attacks
+  const sanitizedContent = useMemo(() => sanitizeTipTapJSON(content), [content]);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -23,10 +28,11 @@ export function ArticleRenderer({ content }: ArticleRendererProps) {
         openOnClick: true,
         HTMLAttributes: {
           class: 'text-blue-600 hover:text-blue-800 underline',
+          rel: 'noopener noreferrer',  // Security: prevent reverse tabnabbing
         },
       }),
     ],
-    content,
+    content: sanitizedContent,
     editable: false,
     editorProps: {
       attributes: {
