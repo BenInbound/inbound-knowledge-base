@@ -382,7 +382,7 @@ export default function CategoryManagementClient({
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={loading || (selectedCategoryWithCount && selectedCategoryWithCount.article_count > 0 && !targetCategoryId)}
+              disabled={loading || ((selectedCategoryWithCount?.article_count ?? 0) > 0 && !targetCategoryId)}
             >
               {loading ? 'Processing...' : selectedCategoryWithCount && selectedCategoryWithCount.article_count > 0 ? 'Move & Delete' : 'Delete Category'}
             </Button>

@@ -152,7 +152,7 @@ export function validateCategory(
   }
 
   // Sort order validation
-  if (category.sort_order < 0) {
+  if (category.sort_order !== undefined && category.sort_order < 0) {
     errors.push({
       row,
       item: category.name,

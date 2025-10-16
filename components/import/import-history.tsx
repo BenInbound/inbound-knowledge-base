@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -40,7 +40,7 @@ export default function ImportHistory({ onRefresh }: ImportHistoryProps) {
   const [total, setTotal] = useState(0);
   const limit = 10;
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -62,11 +62,11 @@ export default function ImportHistory({ onRefresh }: ImportHistoryProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page]);
 
   useEffect(() => {
     fetchJobs();
-  }, [page]);
+  }, [fetchJobs]);
 
   const handleRefresh = () => {
     fetchJobs();
