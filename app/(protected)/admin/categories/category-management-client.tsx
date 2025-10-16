@@ -27,6 +27,7 @@ export default function CategoryManagementClient({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [targetCategoryId, setTargetCategoryId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -121,9 +122,64 @@ export default function CategoryManagementClient({
     }
   };
 
+  // Move articles to another category
+  const handleMoveArticles = async () => {
+    if (!selectedCategory || !targetCategoryId) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/categories/${selectedCategory.id}/move-articles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_category_id: targetCategoryId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to move articles');
+      }
+
+      // Update article count for both categories
+      const { moved_count } = await response.json();
+      setCategories(
+        categories.map((cat) => {
+          if (cat.id === selectedCategory.id) {
+            return { ...cat, article_count: 0 };
+          }
+          if (cat.id === targetCategoryId) {
+            return { ...cat, article_count: cat.article_count + moved_count };
+          }
+          return cat;
+        })
+      );
+
+      // Now proceed with deletion
+      await handleDelete();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to move articles');
+      setLoading(false);
+    }
+  };
+
   // Delete category
   const handleDelete = async () => {
     if (!selectedCategory) return;
+
+    const categoryWithCount = categories.find((c) => c.id === selectedCategory.id);
+
+    // If category has articles and no target category selected, show error
+    if (categoryWithCount && categoryWithCount.article_count > 0 && !targetCategoryId) {
+      setError('Please select a category to move articles to, or remove articles manually first.');
+      return;
+    }
+
+    // If articles need to be moved, do that first
+    if (categoryWithCount && categoryWithCount.article_count > 0 && targetCategoryId) {
+      await handleMoveArticles();
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -135,13 +191,14 @@ export default function CategoryManagementClient({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to delete category');
+        throw new Error(error.error || error.details || 'Failed to delete category');
       }
 
       // Remove from categories list
       setCategories(categories.filter((cat) => cat.id !== selectedCategory.id));
       setIsDeleteModalOpen(false);
       setSelectedCategory(null);
+      setTargetCategoryId('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete category');
     } finally {
@@ -159,6 +216,7 @@ export default function CategoryManagementClient({
   // Open delete modal
   const openDeleteModal = (category: Category) => {
     setSelectedCategory(category);
+    setTargetCategoryId('');
     setError(null);
     setIsDeleteModalOpen(true);
   };
@@ -262,17 +320,46 @@ export default function CategoryManagementClient({
               </div>
 
               {selectedCategoryWithCount && selectedCategoryWithCount.article_count > 0 && (
-                <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-md p-4">
-                  <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-amber-900">Warning</p>
-                    <p className="text-sm text-amber-800 mt-1">
-                      This category contains {selectedCategoryWithCount.article_count}{' '}
-                      {selectedCategoryWithCount.article_count === 1 ? 'article' : 'articles'}.
-                      Deleting it will remove the category association from these articles.
-                    </p>
+                <>
+                  <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
+                    <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-amber-900">Category Contains Articles</p>
+                      <p className="text-sm text-amber-800 mt-1">
+                        This category contains {selectedCategoryWithCount.article_count}{' '}
+                        {selectedCategoryWithCount.article_count === 1 ? 'article' : 'articles'}.
+                        You must move {selectedCategoryWithCount.article_count === 1 ? 'it' : 'them'} to
+                        another category before deletion.
+                      </p>
+                    </div>
                   </div>
-                </div>
+
+                  <div className="space-y-2 mb-4">
+                    <label htmlFor="target-category" className="block text-sm font-medium text-primary-900">
+                      Move articles to:
+                    </label>
+                    <select
+                      id="target-category"
+                      value={targetCategoryId}
+                      onChange={(e) => setTargetCategoryId(e.target.value)}
+                      className="w-full rounded-md border border-primary-300 bg-white px-3 py-2 text-sm text-primary-900 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500"
+                    >
+                      <option value="">Select a category...</option>
+                      {categories
+                        .filter((cat) => cat.id !== selectedCategory.id)
+                        .map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name} ({cat.article_count} articles)
+                          </option>
+                        ))}
+                    </select>
+                    {!targetCategoryId && (
+                      <p className="text-xs text-primary-600">
+                        Select a category to move the articles to before deletion.
+                      </p>
+                    )}
+                  </div>
+                </>
               )}
 
               <p className="text-sm text-primary-600 mt-4">
@@ -286,6 +373,7 @@ export default function CategoryManagementClient({
               onClick={() => {
                 setIsDeleteModalOpen(false);
                 setSelectedCategory(null);
+                setTargetCategoryId('');
               }}
               disabled={loading}
             >
@@ -294,9 +382,9 @@ export default function CategoryManagementClient({
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={loading}
+              disabled={loading || (selectedCategoryWithCount && selectedCategoryWithCount.article_count > 0 && !targetCategoryId)}
             >
-              {loading ? 'Deleting...' : 'Delete Category'}
+              {loading ? 'Processing...' : selectedCategoryWithCount && selectedCategoryWithCount.article_count > 0 ? 'Move & Delete' : 'Delete Category'}
             </Button>
           </DialogFooter>
         </DialogContent>

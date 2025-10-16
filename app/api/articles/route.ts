@@ -19,38 +19,105 @@ export async function GET(request: NextRequest) {
     const categoryId = searchParams.get('category');
     const authorId = searchParams.get('author');
 
-    // Build query
-    let query = supabase
-      .from('articles')
-      .select(
-        `
-        id,
-        title,
-        slug,
-        excerpt,
-        status,
-        author_id,
-        published_at,
-        created_at,
-        updated_at,
-        view_count
-      `,
-        { count: 'exact' }
-      )
-      .eq('status', status)
-      .order('published_at', { ascending: false, nullsFirst: false })
-      .range(offset, offset + limit - 1);
-
-    // Apply filters
+    // If filtering by category, we need to join with article_categories
+    let data, error, count;
     if (categoryId) {
-      query = query.contains('id', [categoryId]);
-    }
+      // Query article_categories first to get article IDs
+      const { data: articleCategories, error: acError } = await supabase
+        .from('article_categories')
+        .select('article_id')
+        .eq('category_id', categoryId);
 
-    if (authorId) {
-      query = query.eq('author_id', authorId);
-    }
+      if (acError) {
+        console.error('Category filter error:', acError);
+        return NextResponse.json(
+          { error: 'Failed to filter by category' },
+          { status: 500 }
+        );
+      }
 
-    const { data, error, count } = await query;
+      const articleIds = (articleCategories || []).map((ac) => ac.article_id);
+
+      if (articleIds.length === 0) {
+        // No articles in this category
+        return NextResponse.json({
+          data: [],
+          meta: {
+            page,
+            limit,
+            total: 0,
+            total_pages: 0,
+            has_next: false,
+            has_prev: false,
+          },
+        });
+      }
+
+      // Build query with category filter
+      let query = supabase
+        .from('articles')
+        .select(
+          `
+          id,
+          title,
+          slug,
+          excerpt,
+          status,
+          author_id,
+          published_at,
+          created_at,
+          updated_at,
+          view_count
+        `,
+          { count: 'exact' }
+        )
+        .eq('status', status)
+        .in('id', articleIds)
+        .order('published_at', { ascending: false, nullsFirst: false })
+        .range(offset, offset + limit - 1);
+
+      // Apply author filter if provided
+      if (authorId) {
+        query = query.eq('author_id', authorId);
+      }
+
+      const result = await query;
+      data = result.data;
+      error = result.error;
+      count = result.count;
+    } else {
+      // No category filter - use standard query
+      let query = supabase
+        .from('articles')
+        .select(
+          `
+          id,
+          title,
+          slug,
+          excerpt,
+          status,
+          author_id,
+          published_at,
+          created_at,
+          updated_at,
+          view_count
+        `,
+          { count: 'exact' }
+        )
+        .eq('status', status)
+        .order('published_at', { ascending: false, nullsFirst: false })
+        .range(offset, offset + limit - 1);
+
+      // Apply author filter if provided
+      if (authorId) {
+        query = query.eq('author_id', authorId);
+      }
+
+      const result = await query;
+      data = result.data;
+      error = result.error;
+      count = result.count;
+    }
 
     if (error) {
       console.error('Articles API error:', error);

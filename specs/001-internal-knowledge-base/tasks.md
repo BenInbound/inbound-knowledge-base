@@ -217,33 +217,33 @@
 
 ### Category Management UI
 
-- [ ] T101 [US4] Create category management page (admin only) in app/(protected)/admin/categories/page.tsx
-- [ ] T102 [P] [US4] Create category form component in components/categories/category-form.tsx
-- [ ] T103 [P] [US4] Create category tree view component in components/categories/category-tree.tsx
-- [ ] T104 [US4] Add parent category selector with max 3 levels depth validation
+- [X] T101 [US4] Create category management page (admin only) in app/(protected)/admin/categories/page.tsx
+- [X] T102 [P] [US4] Create category form component in components/categories/category-form.tsx
+- [X] T103 [P] [US4] Create category tree view component in components/categories/category-tree.tsx
+- [X] T104 [US4] Add parent category selector with max 3 levels depth validation
 - [ ] T105 [US4] Implement drag-and-drop reordering for categories
-- [ ] T106 [US4] Add category creation modal dialog
+- [X] T106 [US4] Add category creation modal dialog
 
 ### Category API Routes
 
-- [ ] T107 [US4] Create POST /api/categories endpoint in app/api/categories/route.ts
-- [ ] T108 [US4] Create PATCH /api/categories/[id] endpoint in app/api/categories/[id]/route.ts
-- [ ] T109 [US4] Create DELETE /api/categories/[id] endpoint with article check in app/api/categories/[id]/route.ts
-- [ ] T110 [US4] Add admin role check to all category mutation endpoints
+- [X] T107 [US4] Create POST /api/categories endpoint in app/api/categories/route.ts
+- [X] T108 [US4] Create PATCH /api/categories/[id] endpoint in app/api/categories/[id]/route.ts
+- [X] T109 [US4] Create DELETE /api/categories/[id] endpoint with article check in app/api/categories/[id]/route.ts
+- [X] T110 [US4] Add admin role check to all category mutation endpoints
 
 ### Article-Category Management
 
-- [ ] T111 [US4] Add category assignment to article form (multiple selection)
-- [ ] T112 [US4] Create article-category relationship management in article editor
-- [ ] T113 [US4] Update article_categories table when article categories change
-- [ ] T114 [US4] Add category filter to article list pages
-- [ ] T115 [US4] Display category breadcrumbs on article pages
+- [X] T111 [US4] Add category assignment to article form (multiple selection)
+- [X] T112 [US4] Create article-category relationship management in article editor
+- [X] T113 [US4] Update article_categories table when article categories change
+- [X] T114 [US4] Add category filter to article list pages
+- [X] T115 [US4] Display category breadcrumbs on article pages
 
 ### Category Deletion Protection
 
-- [ ] T116 [US4] Implement confirmation dialog for category deletion
-- [ ] T117 [US4] Check for articles in category before allowing deletion
-- [ ] T118 [US4] Provide option to move articles to different category before deletion
+- [X] T116 [US4] Implement confirmation dialog for category deletion
+- [X] T117 [US4] Check for articles in category before allowing deletion
+- [X] T118 [US4] Provide option to move articles to different category before deletion
 
 **Checkpoint**: Content organization is fully functional with hierarchical categories
 
