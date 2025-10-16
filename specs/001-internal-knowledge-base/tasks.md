@@ -16,18 +16,18 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Initialize Next.js 14 project with TypeScript, Tailwind CSS, and App Router
-- [ ] T002 [P] Install core dependencies (Supabase client, auth helpers) in package.json
-- [ ] T003 [P] Install TipTap editor dependencies (@tiptap/react, starter-kit, extensions) in package.json
-- [ ] T004 [P] Install validation and utility dependencies (zod, clsx, tailwind-merge) in package.json
-- [ ] T005 [P] Install testing dependencies (Vitest, Playwright, React Testing Library) in package.json
-- [ ] T006 [P] Move TT Hoves Pro fonts to public/fonts/ directory
-- [ ] T007 [P] Configure Tailwind with Inbound design system colors and TT Hoves Pro fonts in tailwind.config.ts
-- [ ] T008 [P] Setup TypeScript strict mode configuration in tsconfig.json
-- [ ] T009 [P] Configure ESLint and Prettier for code consistency
-- [ ] T010 [P] Create project directory structure (app, components, lib, tests)
-- [ ] T011 [P] Create .env.local.example template file
-- [ ] T012 [P] Setup Supabase CLI and create local development environment
+- [X] T001 Initialize Next.js 14 project with TypeScript, Tailwind CSS, and App Router
+- [X] T002 [P] Install core dependencies (Supabase client, auth helpers) in package.json
+- [X] T003 [P] Install TipTap editor dependencies (@tiptap/react, starter-kit, extensions) in package.json
+- [X] T004 [P] Install validation and utility dependencies (zod, clsx, tailwind-merge) in package.json
+- [X] T005 [P] Install testing dependencies (Vitest, Playwright, React Testing Library) in package.json
+- [X] T006 [P] Move TT Hoves Pro fonts to public/fonts/ directory
+- [X] T007 [P] Configure Tailwind with Inbound design system colors and TT Hoves Pro fonts in tailwind.config.ts
+- [X] T008 [P] Setup TypeScript strict mode configuration in tsconfig.json
+- [X] T009 [P] Configure ESLint and Prettier for code consistency
+- [X] T010 [P] Create project directory structure (app, components, lib, tests)
+- [X] T011 [P] Create .env.local.example template file
+- [X] T012 [P] Setup Supabase CLI and create local development environment
 
 ---
 
@@ -39,45 +39,45 @@
 
 ### Database Schema & Migrations
 
-- [ ] T013 Create initial Supabase migration file in supabase/migrations/
-- [ ] T014 [P] Define profiles table schema with RLS policies in migration
-- [ ] T015 [P] Define categories table schema with hierarchy support and RLS policies in migration
-- [ ] T016 [P] Define articles table schema with full-text search and RLS policies in migration
-- [ ] T017 [P] Define article_categories junction table schema with RLS policies in migration
-- [ ] T018 [P] Define questions table schema with full-text search and RLS policies in migration
-- [ ] T019 [P] Define answers table schema with RLS policies in migration
-- [ ] T020 [P] Define import_jobs table schema with RLS policies in migration
-- [ ] T021 Create auth.check_email_domain() trigger function to enforce @inbound.no restriction in migration
-- [ ] T022 Create search_content() PostgreSQL function for full-text search in migration
-- [ ] T023 Create database indexes for performance (foreign keys, search vectors) in migration
-- [ ] T024 Apply migrations to local Supabase instance using supabase db push
-- [ ] T025 Create seed data script in supabase/seed.sql with test users, categories, and articles
+- [X] T013 Create initial Supabase migration file in supabase/migrations/
+- [X] T014 [P] Define profiles table schema with RLS policies in migration
+- [X] T015 [P] Define categories table schema with hierarchy support and RLS policies in migration
+- [X] T016 [P] Define articles table schema with full-text search and RLS policies in migration
+- [X] T017 [P] Define article_categories junction table schema with RLS policies in migration
+- [X] T018 [P] Define questions table schema with full-text search and RLS policies in migration
+- [X] T019 [P] Define answers table schema with RLS policies in migration
+- [X] T020 [P] Define import_jobs table schema with RLS policies in migration
+- [X] T021 Create auth.check_email_domain() trigger function to enforce @inbound.no restriction in migration
+- [X] T022 Create search_content() PostgreSQL function for full-text search in migration
+- [X] T023 Create database indexes for performance (foreign keys, search vectors) in migration
+- [X] T024 Apply migrations to local Supabase instance using supabase db push
+- [X] T025 Create seed data script in supabase/seed.sql with test users, categories, and articles
 
 ### Authentication & Authorization
 
-- [ ] T026 Create Supabase browser client utility in lib/supabase/client.ts
-- [ ] T027 Create Supabase server client utility in lib/supabase/server.ts
-- [ ] T028 Create authentication middleware in lib/supabase/middleware.ts with email domain verification
-- [ ] T029 Configure Next.js middleware in middleware.ts to protect routes
-- [ ] T030 Create TypeScript types for User and Profile in lib/types/auth.ts
+- [X] T026 Create Supabase browser client utility in lib/supabase/client.ts
+- [X] T027 Create Supabase server client utility in lib/supabase/server.ts
+- [X] T028 Create authentication middleware in lib/supabase/middleware.ts with email domain verification
+- [X] T029 Configure Next.js middleware in middleware.ts to protect routes
+- [X] T030 Create TypeScript types for User and Profile in lib/types/auth.ts
 
 ### Base UI Components
 
-- [ ] T031 Configure TT Hoves Pro font loading in app/layout.tsx
-- [ ] T032 Create global styles with Inbound design system in app/globals.css
-- [ ] T033 [P] Create Button component with variants in components/ui/button.tsx
-- [ ] T034 [P] Create Input component in components/ui/input.tsx
-- [ ] T035 [P] Create Card component in components/ui/card.tsx
-- [ ] T036 [P] Create Dialog component wrapper in components/ui/dialog.tsx
-- [ ] T037 [P] Create Loading spinner component in components/ui/loading.tsx
-- [ ] T038 [P] Create ErrorMessage component in components/ui/error.tsx
+- [X] T031 Configure TT Hoves Pro font loading in app/layout.tsx
+- [X] T032 Create global styles with Inbound design system in app/globals.css
+- [X] T033 [P] Create Button component with variants in components/ui/button.tsx
+- [X] T034 [P] Create Input component in components/ui/input.tsx
+- [X] T035 [P] Create Card component in components/ui/card.tsx
+- [X] T036 [P] Create Dialog component wrapper in components/ui/dialog.tsx
+- [X] T037 [P] Create Loading spinner component in components/ui/loading.tsx
+- [X] T038 [P] Create ErrorMessage component in components/ui/error.tsx
 
 ### Shared Utilities
 
-- [ ] T039 [P] Create TypeScript types for all database entities in lib/types/database.ts
-- [ ] T040 [P] Create Zod validation schemas for forms in lib/validation/schemas.ts
-- [ ] T041 [P] Create utility functions (slug generation, date formatting) in lib/utils/helpers.ts
-- [ ] T042 [P] Create error handling utilities in lib/utils/errors.ts
+- [X] T039 [P] Create TypeScript types for all database entities in lib/types/database.ts
+- [X] T040 [P] Create Zod validation schemas for forms in lib/validation/schemas.ts
+- [X] T041 [P] Create utility functions (slug generation, date formatting) in lib/utils/helpers.ts
+- [X] T042 [P] Create error handling utilities in lib/utils/errors.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

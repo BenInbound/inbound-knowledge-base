@@ -4,11 +4,109 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
+    /* Inbound Design System - Color Variables */
+    --background: 43 36% 97%; /* primary-50 */
+    --foreground: 29 18% 15%; /* primary-900 */
+
+    --primary: 29 18% 40%; /* primary-700 */
+    --primary-foreground: 43 36% 97%; /* primary-50 */
+
+    --accent: 340 100% 71%; /* accent-500 */
+    --accent-foreground: 340 43% 11%; /* accent-900 */
+
+    --muted: 36 31% 84%; /* primary-200 */
+    --muted-foreground: 30 20% 35%; /* primary-700 */
+
+    --border: 36 31% 84%; /* primary-200 */
+    --input: 36 31% 84%; /* primary-200 */
+    --ring: 340 100% 71%; /* accent-500 */
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply bg-primary-50 text-primary-900;
+    @apply bg-primary-50 text-primary-900 font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans;
+    font-weight: 700;
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-accent-500 ring-offset-2 ring-offset-primary-50;
+  }
+
+  /* Selection styles */
+  ::selection {
+    @apply bg-accent-200 text-accent-900;
+  }
+}
+
+@layer components {
+  /* Prose styles for rich text content */
+  .prose {
+    @apply text-primary-900 max-w-none;
+  }
+
+  .prose h1 {
+    @apply text-3xl font-bold text-primary-900 mt-8 mb-4;
+  }
+
+  .prose h2 {
+    @apply text-2xl font-bold text-primary-900 mt-6 mb-3;
+  }
+
+  .prose h3 {
+    @apply text-xl font-bold text-primary-900 mt-4 mb-2;
+  }
+
+  .prose p {
+    @apply mb-4 leading-7;
+  }
+
+  .prose a {
+    @apply text-accent-600 hover:text-accent-700 underline underline-offset-4;
+  }
+
+  .prose strong {
+    @apply font-bold text-primary-900;
+  }
+
+  .prose ul, .prose ol {
+    @apply mb-4 ml-6;
+  }
+
+  .prose li {
+    @apply mb-2;
+  }
+
+  .prose img {
+    @apply rounded-lg my-6;
+  }
+
+  .prose code {
+    @apply bg-primary-100 px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  .prose pre {
+    @apply bg-primary-100 p-4 rounded-lg overflow-x-auto my-4;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-accent-500 pl-4 italic text-primary-700 my-4;
+  }
+}
+
+@layer utilities {
+  /* Custom utility classes */
+  .text-balance {
+    text-wrap: balance;
   }
 }
