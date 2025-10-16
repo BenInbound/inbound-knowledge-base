@@ -13,17 +13,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
-  // Fetch article with author and categories
+  // Fetch article with categories
   const { data: article, error } = await supabase
     .from('articles')
     .select(
       `
       *,
-      author:profiles!articles_author_id_fkey(
-        id,
-        full_name,
-        avatar_url
-      ),
       categories:article_categories(
         category:categories(*)
       )
@@ -37,10 +32,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
+  // Fetch author profile separately
+  const { data: author } = await supabase
+    .from('profiles')
+    .select('id, full_name, avatar_url')
+    .eq('id', article.author_id)
+    .single();
+
   // Transform the nested categories structure
   const articleWithRelations: ArticleWithRelations = {
     ...article,
-    author: article.author,
+    author: author || null,
     categories: article.categories.map((ac: any) => ac.category),
   };
 

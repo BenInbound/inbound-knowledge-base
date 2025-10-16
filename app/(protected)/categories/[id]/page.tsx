@@ -118,7 +118,7 @@ async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[
   const articleIds = articleCategories.map(ac => ac.article_id);
   console.log('getCategoryArticles - articleIds:', articleIds);
 
-  // Then fetch the articles
+  // Then fetch the articles (without profile join)
   const { data: articles, error } = await supabase
     .from('articles')
     .select(`
@@ -131,8 +131,7 @@ async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[
       published_at,
       created_at,
       updated_at,
-      view_count,
-      profiles!articles_author_id_fkey(full_name)
+      view_count
     `)
     .eq('status', 'published')
     .in('id', articleIds)
@@ -147,15 +146,31 @@ async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[
     return [];
   }
 
+  if (!articles || articles.length === 0) {
+    return [];
+  }
+
+  // Fetch profiles for all authors
+  const authorIds = [...new Set(articles.map(a => a.author_id))];
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .in('id', authorIds);
+
+  // Create a map of author_id -> full_name
+  const authorMap = new Map(
+    (profiles || []).map(p => [p.id, p.full_name])
+  );
+
   // Map to ArticleListItem format
-  return (articles || []).map((article) => ({
+  return articles.map((article) => ({
     id: article.id,
     title: article.title,
     slug: article.slug,
     excerpt: article.excerpt,
     status: article.status,
     author_id: article.author_id,
-    author_name: (article.profiles as any)?.full_name || 'Unknown',
+    author_name: authorMap.get(article.author_id) || 'Unknown',
     published_at: article.published_at,
     created_at: article.created_at,
     updated_at: article.updated_at,

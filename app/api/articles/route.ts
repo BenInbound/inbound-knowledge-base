@@ -30,12 +30,7 @@ export async function GET(request: NextRequest) {
         published_at,
         created_at,
         updated_at,
-        view_count,
-        author:profiles!articles_author_id_fkey(
-          id,
-          full_name,
-          avatar_url
-        )
+        view_count
       `,
         { count: 'exact' }
       )
@@ -62,15 +57,41 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!data || data.length === 0) {
+      return NextResponse.json({
+        data: [],
+        meta: {
+          page,
+          limit,
+          total: count || 0,
+          total_pages: 0,
+          has_next: false,
+          has_prev: false,
+        },
+      });
+    }
+
+    // Fetch profiles for all authors
+    const authorIds = [...new Set(data.map((a: any) => a.author_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', authorIds);
+
+    // Create a map of author_id -> full_name
+    const authorMap = new Map(
+      (profiles || []).map((p: any) => [p.id, p.full_name])
+    );
+
     // Transform data to include author details
-    const articles = (data || []).map((article: any) => ({
+    const articles = data.map((article: any) => ({
       id: article.id,
       title: article.title,
       slug: article.slug,
       excerpt: article.excerpt,
       status: article.status,
       author_id: article.author_id,
-      author_name: article.author.full_name,
+      author_name: authorMap.get(article.author_id) || 'Unknown',
       published_at: article.published_at,
       created_at: article.created_at,
       updated_at: article.updated_at,
