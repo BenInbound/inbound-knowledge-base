@@ -151,7 +151,7 @@ async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[
   }
 
   // Fetch profiles for all authors
-  const authorIds = [...new Set(articles.map(a => a.author_id))];
+  const authorIds = Array.from(new Set(articles.map(a => a.author_id)));
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, full_name')

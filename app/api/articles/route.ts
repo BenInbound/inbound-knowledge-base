@@ -1,5 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { createArticleSchema } from '@/lib/validation/schemas';
+import { slugify } from '@/lib/utils/helpers';
+import type { ArticleInsert } from '@/lib/types/database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -72,7 +75,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch profiles for all authors
-    const authorIds = [...new Set(data.map((a: any) => a.author_id))];
+    const authorIds = Array.from(new Set(data.map((a: any) => a.author_id)));
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, full_name')
@@ -111,6 +114,180 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Articles API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+
+    // Check authentication
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+
+    // Parse and validate request body
+    const body = await request.json();
+
+    // Validate with Zod schema
+    const validationResult = createArticleSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validationResult.error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { title, slug, content, excerpt, status, category_ids } = validationResult.data;
+
+    // Generate slug if not provided
+    const finalSlug = slug || slugify(title);
+
+    // Check for slug uniqueness
+    const { data: existingArticle } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('slug', finalSlug)
+      .single();
+
+    if (existingArticle) {
+      // Add a number suffix to make it unique
+      const timestamp = Date.now();
+      const uniqueSlug = `${finalSlug}-${timestamp}`;
+
+      const { data: checkUnique } = await supabase
+        .from('articles')
+        .select('id')
+        .eq('slug', uniqueSlug)
+        .single();
+
+      if (checkUnique) {
+        return NextResponse.json(
+          { error: 'Could not generate unique slug. Please try a different title.' },
+          { status: 409 }
+        );
+      }
+
+      // Use unique slug
+      const articleData: ArticleInsert = {
+        title,
+        slug: uniqueSlug,
+        content,
+        excerpt: excerpt || null,
+        status: status || 'draft',
+        author_id: user.id,
+        published_at: status === 'published' ? new Date().toISOString() : null,
+        import_metadata: null,
+      };
+
+      const { data: article, error: insertError } = await supabase
+        .from('articles')
+        .insert(articleData)
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error creating article:', insertError);
+        return NextResponse.json(
+          { error: 'Failed to create article', details: insertError.message },
+          { status: 500 }
+        );
+      }
+
+      // Insert article-category relationships
+      if (category_ids && category_ids.length > 0 && article) {
+        const articleCategories = category_ids.map((category_id) => ({
+          article_id: article.id,
+          category_id,
+        }));
+
+        const { error: categoryError } = await supabase
+          .from('article_categories')
+          .insert(articleCategories);
+
+        if (categoryError) {
+          console.error('Error linking categories:', categoryError);
+          // Don't fail the request, just log the error
+        }
+      }
+
+      return NextResponse.json(
+        {
+          data: article,
+          message: status === 'published' ? 'Article published successfully' : 'Article draft saved',
+        },
+        { status: 201 }
+      );
+    }
+
+    // Prepare article data for insertion
+    const articleData: ArticleInsert = {
+      title,
+      slug: finalSlug,
+      content,
+      excerpt: excerpt || null,
+      status: status || 'draft',
+      author_id: user.id,
+      published_at: status === 'published' ? new Date().toISOString() : null,
+      import_metadata: null,
+    };
+
+    // Insert article
+    const { data: article, error: insertError } = await supabase
+      .from('articles')
+      .insert(articleData)
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error creating article:', insertError);
+      return NextResponse.json(
+        { error: 'Failed to create article', details: insertError.message },
+        { status: 500 }
+      );
+    }
+
+    // Insert article-category relationships
+    if (category_ids && category_ids.length > 0 && article) {
+      const articleCategories = category_ids.map((category_id) => ({
+        article_id: article.id,
+        category_id,
+      }));
+
+      const { error: categoryError } = await supabase
+        .from('article_categories')
+        .insert(articleCategories);
+
+      if (categoryError) {
+        console.error('Error linking categories:', categoryError);
+        // Don't fail the request, just log the error
+      }
+    }
+
+    return NextResponse.json(
+      {
+        data: article,
+        message: status === 'published' ? 'Article published successfully' : 'Article draft saved',
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error('Articles POST API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

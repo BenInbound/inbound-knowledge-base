@@ -100,7 +100,7 @@ export interface ImportJob {
  */
 export interface ArticleContent {
   type: 'doc';
-  content: ArticleContentNode[];
+  content?: ArticleContentNode[];
 }
 
 export interface ArticleContentNode {

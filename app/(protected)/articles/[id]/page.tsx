@@ -1,12 +1,38 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { ArticleView } from '@/components/articles/article-view';
-import type { ArticleWithRelations } from '@/lib/types/database';
+import Breadcrumbs, { buildCategoryBreadcrumbs } from '@/components/navigation/breadcrumbs';
+import type { ArticleWithRelations, Category } from '@/lib/types/database';
 
 interface ArticlePageProps {
   params: Promise<{
     id: string;
   }>;
+}
+
+/**
+ * Fetch category hierarchy for a given category
+ * Returns array of categories from root to the given category
+ */
+async function getCategoryHierarchy(categoryId: string): Promise<Category[]> {
+  const supabase = await createClient();
+  const hierarchy: Category[] = [];
+  let currentId: string | null = categoryId;
+
+  while (currentId) {
+    const { data: category, error }: { data: Category | null; error: any } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('id', currentId)
+      .single();
+
+    if (error || !category) break;
+
+    hierarchy.unshift(category);
+    currentId = category.parent_id;
+  }
+
+  return hierarchy;
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
@@ -60,8 +86,23 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       // View count updated
     });
 
+  // Build breadcrumbs from the first category (if any)
+  // If article has multiple categories, we use the first one for breadcrumb navigation
+  let breadcrumbItems = [];
+  if (articleWithRelations.categories.length > 0) {
+    const primaryCategory = articleWithRelations.categories[0];
+    const categoryHierarchy = await getCategoryHierarchy(primaryCategory.id);
+    breadcrumbItems = buildCategoryBreadcrumbs(categoryHierarchy, {
+      label: article.title,
+    });
+  } else {
+    // No categories, just show article title
+    breadcrumbItems = [{ label: article.title }];
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <Breadcrumbs items={breadcrumbItems} />
       <ArticleView article={articleWithRelations} currentUserId={user?.id} />
     </div>
   );
