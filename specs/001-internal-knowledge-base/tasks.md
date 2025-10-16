@@ -259,40 +259,40 @@
 
 ### Q&A Pages
 
-- [ ] T119 [US5] Create Q&A section landing page in app/(protected)/qa/page.tsx
-- [ ] T120 [US5] Create question detail page in app/(protected)/qa/questions/[id]/page.tsx
-- [ ] T121 [US5] Create question creation page in app/(protected)/qa/questions/new/page.tsx
+- [X] T119 [US5] Create Q&A section landing page in app/(protected)/qa/page.tsx
+- [X] T120 [US5] Create question detail page in app/(protected)/qa/questions/[id]/page.tsx
+- [X] T121 [US5] Create question creation page in app/(protected)/qa/questions/new/page.tsx
 
 ### Question Components
 
-- [ ] T122 [P] [US5] Create question list component with filters in components/qa/question-list.tsx
-- [ ] T123 [P] [US5] Create question card component in components/qa/question-card.tsx
-- [ ] T124 [P] [US5] Create question form component in components/qa/question-form.tsx
-- [ ] T125 [US5] Add answered/unanswered filter toggle to question list
+- [X] T122 [P] [US5] Create question list component with filters in components/qa/question-list.tsx
+- [X] T123 [P] [US5] Create question card component in components/qa/question-card.tsx
+- [X] T124 [P] [US5] Create question form component in components/qa/question-form.tsx
+- [X] T125 [US5] Add answered/unanswered filter toggle to question list
 
 ### Answer Components
 
-- [ ] T126 [P] [US5] Create answer list component in components/qa/answer-list.tsx
-- [ ] T127 [P] [US5] Create answer form component in components/qa/answer-form.tsx
-- [ ] T128 [US5] Add "Accept Answer" button for question authors
-- [ ] T129 [US5] Show accepted answer at top of answer list
+- [X] T126 [P] [US5] Create answer list component in components/qa/answer-list.tsx
+- [X] T127 [P] [US5] Create answer form component in components/qa/answer-form.tsx
+- [X] T128 [US5] Add "Accept Answer" button for question authors
+- [X] T129 [US5] Show accepted answer at top of answer list
 
 ### Q&A API Routes
 
-- [ ] T130 [US5] Create POST /api/qa/questions endpoint in app/api/qa/questions/route.ts
-- [ ] T131 [US5] Create GET /api/qa/questions endpoint with filters in app/api/qa/questions/route.ts
-- [ ] T132 [US5] Create GET /api/qa/questions/[id] endpoint in app/api/qa/questions/[id]/route.ts
-- [ ] T133 [US5] Create PATCH /api/qa/questions/[id] endpoint in app/api/qa/questions/[id]/route.ts
-- [ ] T134 [US5] Create DELETE /api/qa/questions/[id] endpoint in app/api/qa/questions/[id]/route.ts
-- [ ] T135 [US5] Create POST /api/qa/questions/[id]/answers endpoint in app/api/qa/questions/[id]/answers/route.ts
-- [ ] T136 [US5] Create PATCH /api/qa/answers/[id] endpoint in app/api/qa/answers/[id]/route.ts
-- [ ] T137 [US5] Create DELETE /api/qa/answers/[id] endpoint in app/api/qa/answers/[id]/route.ts
-- [ ] T138 [US5] Create POST /api/qa/answers/[id]/accept endpoint in app/api/qa/answers/[id]/accept/route.ts
+- [X] T130 [US5] Create POST /api/qa/questions endpoint in app/api/qa/questions/route.ts
+- [X] T131 [US5] Create GET /api/qa/questions endpoint with filters in app/api/qa/questions/route.ts
+- [X] T132 [US5] Create GET /api/qa/questions/[id] endpoint in app/api/qa/questions/[id]/route.ts
+- [X] T133 [US5] Create PATCH /api/qa/questions/[id] endpoint in app/api/qa/questions/[id]/route.ts
+- [X] T134 [US5] Create DELETE /api/qa/questions/[id] endpoint in app/api/qa/questions/[id]/route.ts
+- [X] T135 [US5] Create POST /api/qa/questions/[id]/answers endpoint in app/api/qa/questions/[id]/answers/route.ts
+- [X] T136 [US5] Create PATCH /api/qa/answers/[id] endpoint in app/api/qa/answers/[id]/route.ts
+- [X] T137 [US5] Create DELETE /api/qa/answers/[id] endpoint in app/api/qa/answers/[id]/route.ts
+- [X] T138 [US5] Create POST /api/qa/answers/[id]/accept endpoint in app/api/qa/answers/[id]/accept/route.ts
 
 ### Search Integration
 
-- [ ] T139 [US5] Add questions to main search results
-- [ ] T140 [US5] Include answers in question search context
+- [X] T139 [US5] Add questions to main search results
+- [X] T140 [US5] Include answers in question search context
 
 **Checkpoint**: Q&A system is fully functional and searchable
 
@@ -308,32 +308,32 @@
 
 ### Import UI
 
-- [ ] T141 [US6] Create import page (admin only) in app/(protected)/admin/import/page.tsx
-- [ ] T142 [P] [US6] Create file upload component in components/import/file-upload.tsx
-- [ ] T143 [P] [US6] Create import progress component in components/import/import-progress.tsx
-- [ ] T144 [P] [US6] Create import results display component in components/import/import-results.tsx
-- [ ] T145 [US6] Add dry-run mode toggle to import form
+- [X] T141 [US6] Create import page (admin only) in app/(protected)/admin/import/page.tsx
+- [X] T142 [P] [US6] Create file upload component in components/import/file-upload.tsx
+- [X] T143 [P] [US6] Create import progress component in components/import/import-progress.tsx
+- [X] T144 [P] [US6] Create import results display component in components/import/import-results.tsx
+- [X] T145 [US6] Add dry-run mode toggle to import form
 
 ### Import Processing
 
-- [ ] T146 [US6] Create POST /api/import/tettra endpoint in app/api/import/tettra/route.ts
-- [ ] T147 [US6] Implement CSV parser for Tettra export format in lib/import/csv-parser.ts
-- [ ] T148 [US6] Implement JSON parser for Tettra export format in lib/import/json-parser.ts
-- [ ] T149 [US6] Create validation for imported data against schemas in lib/import/validation.ts
-- [ ] T150 [US6] Implement dry-run validation (check without inserting)
-- [ ] T151 [US6] Create article import logic with category mapping in lib/import/article-importer.ts
-- [ ] T152 [US6] Create category import logic with hierarchy preservation in lib/import/category-importer.ts
-- [ ] T153 [US6] Handle duplicate detection (by title or slug)
-- [ ] T154 [US6] Store original Tettra IDs in article import_metadata field
+- [X] T146 [US6] Create POST /api/import/tettra endpoint in app/api/import/tettra/route.ts
+- [X] T147 [US6] Implement CSV parser for Tettra export format in lib/import/csv-parser.ts
+- [X] T148 [US6] Implement JSON parser for Tettra export format in lib/import/json-parser.ts
+- [X] T149 [US6] Create validation for imported data against schemas in lib/import/validation.ts
+- [X] T150 [US6] Implement dry-run validation (check without inserting)
+- [X] T151 [US6] Create article import logic with category mapping in lib/import/article-importer.ts
+- [X] T152 [US6] Create category import logic with hierarchy preservation in lib/import/category-importer.ts
+- [X] T153 [US6] Handle duplicate detection (by title or slug)
+- [X] T154 [US6] Store original Tettra IDs in article import_metadata field
 
 ### Import Job Tracking
 
-- [ ] T155 [US6] Create import job record in import_jobs table when starting
-- [ ] T156 [US6] Update job status (pending → processing → completed/failed)
-- [ ] T157 [US6] Track import statistics (total, success, failed counts)
-- [ ] T158 [US6] Log detailed errors for failed imports in job errors field
-- [ ] T159 [US6] Create GET /api/import/jobs/[id] endpoint in app/api/import/jobs/[id]/route.ts
-- [ ] T160 [US6] Display import history on import page
+- [X] T155 [US6] Create import job record in import_jobs table when starting
+- [X] T156 [US6] Update job status (pending → processing → completed/failed)
+- [X] T157 [US6] Track import statistics (total, success, failed counts)
+- [X] T158 [US6] Log detailed errors for failed imports in job errors field
+- [X] T159 [US6] Create GET /api/import/jobs/[id] endpoint in app/api/import/jobs/[id]/route.ts
+- [X] T160 [US6] Display import history on import page
 
 **Checkpoint**: Tettra data can be successfully imported with full error reporting
 
