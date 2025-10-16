@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { updateArticleSchema } from '@/lib/validation/schemas';
+import type { ArticleUpdate } from '@/lib/types/database';
 
 interface RouteParams {
   params: Promise<{
@@ -69,6 +71,230 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error('Article API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteParams
+) {
+  try {
+    const { id } = await params;
+    const supabase = await createClient();
+
+    // Check authentication
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+
+    // Fetch the existing article to check permissions
+    const { data: existingArticle, error: fetchError } = await supabase
+      .from('articles')
+      .select('id, author_id, status, published_at')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingArticle) {
+      return NextResponse.json(
+        { error: 'Article not found' },
+        { status: 404 }
+      );
+    }
+
+    // Permission check: Only the author can edit the article
+    if (existingArticle.author_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Forbidden - Only the author can edit this article' },
+        { status: 403 }
+      );
+    }
+
+    // Parse and validate request body
+    const body = await request.json();
+
+    // Validate with Zod schema
+    const validationResult = updateArticleSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validationResult.error.errors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { title, slug, content, excerpt, status, category_ids } = validationResult.data;
+
+    // Prepare article update data
+    const updateData: ArticleUpdate = {
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only include fields that are provided
+    if (title !== undefined) updateData.title = title;
+    if (slug !== undefined) updateData.slug = slug;
+    if (content !== undefined) {
+      // Ensure content has the required structure for ArticleContent type
+      updateData.content = {
+        type: 'doc',
+        content: content.content || [],
+      };
+    }
+    if (excerpt !== undefined) updateData.excerpt = excerpt;
+    if (status !== undefined) {
+      updateData.status = status;
+      // If changing from draft to published, set published_at
+      if (status === 'published' && existingArticle.status !== 'published') {
+        updateData.published_at = new Date().toISOString();
+      }
+      // If unpublishing (published -> draft/archived), clear published_at
+      if (status !== 'published' && existingArticle.status === 'published') {
+        updateData.published_at = null;
+      }
+    }
+
+    // Update the article
+    const { data: article, error: updateError } = await supabase
+      .from('articles')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Error updating article:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to update article', details: updateError.message },
+        { status: 500 }
+      );
+    }
+
+    // Update article-category relationships if provided
+    if (category_ids !== undefined) {
+      // Delete existing relationships
+      const { error: deleteError } = await supabase
+        .from('article_categories')
+        .delete()
+        .eq('article_id', id);
+
+      if (deleteError) {
+        console.error('Error deleting article categories:', deleteError);
+      }
+
+      // Insert new relationships
+      if (category_ids.length > 0) {
+        const articleCategories = category_ids.map((category_id) => ({
+          article_id: id,
+          category_id,
+        }));
+
+        const { error: insertError } = await supabase
+          .from('article_categories')
+          .insert(articleCategories);
+
+        if (insertError) {
+          console.error('Error linking categories:', insertError);
+          // Don't fail the request, just log the error
+        }
+      }
+    }
+
+    return NextResponse.json(
+      {
+        data: article,
+        message:
+          status === 'published'
+            ? 'Article updated and published'
+            : 'Article updated successfully',
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Article PATCH API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: RouteParams
+) {
+  try {
+    const { id } = await params;
+    const supabase = await createClient();
+
+    // Check authentication
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+
+    // Fetch the existing article to check permissions
+    const { data: existingArticle, error: fetchError } = await supabase
+      .from('articles')
+      .select('id, author_id, title')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existingArticle) {
+      return NextResponse.json(
+        { error: 'Article not found' },
+        { status: 404 }
+      );
+    }
+
+    // Permission check: Only the author can delete the article
+    if (existingArticle.author_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Forbidden - Only the author can delete this article' },
+        { status: 403 }
+      );
+    }
+
+    // Delete the article (database trigger will handle image cleanup)
+    const { error: deleteError } = await supabase
+      .from('articles')
+      .delete()
+      .eq('id', id);
+
+    if (deleteError) {
+      console.error('Error deleting article:', deleteError);
+      return NextResponse.json(
+        { error: 'Failed to delete article', details: deleteError.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        message: 'Article deleted successfully',
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Article DELETE API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

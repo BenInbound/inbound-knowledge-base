@@ -13,6 +13,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { id } = await params;
   const supabase = await createClient();
 
+  // Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   // Fetch article with categories
   const { data: article, error } = await supabase
     .from('articles')
@@ -57,7 +62,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <ArticleView article={articleWithRelations} />
+      <ArticleView article={articleWithRelations} currentUserId={user?.id} />
     </div>
   );
 }

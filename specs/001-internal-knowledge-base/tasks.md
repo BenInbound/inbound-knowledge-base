@@ -170,38 +170,38 @@
 
 ### Rich Text Editor Setup
 
-- [ ] T078 [P] [US3] Create TipTap editor component in components/editor/tiptap-editor.tsx
-- [ ] T079 [P] [US3] Configure TipTap extensions (StarterKit, Image, Link) in components/editor/extensions.ts
-- [ ] T080 [P] [US3] Create editor toolbar component in components/editor/editor-toolbar.tsx
-- [ ] T081 [P] [US3] Create image upload handler with Supabase Storage in lib/storage/image-upload.ts
-- [ ] T082 [US3] Integrate image upload into TipTap editor
+- [X] T078 [P] [US3] Create TipTap editor component in components/editor/tiptap-editor.tsx
+- [X] T079 [P] [US3] Configure TipTap extensions (StarterKit, Image, Link) in components/editor/extensions.ts
+- [X] T080 [P] [US3] Create editor toolbar component in components/editor/editor-toolbar.tsx
+- [X] T081 [P] [US3] Create image upload handler with Supabase Storage in lib/storage/image-upload.ts
+- [X] T082 [US3] Integrate image upload into TipTap editor
 
 ### Article Creation
 
-- [ ] T083 [US3] Create article creation page in app/(protected)/articles/new/page.tsx
-- [ ] T084 [US3] Create article form component in components/articles/article-form.tsx
-- [ ] T085 [US3] Add title input, category selector, and editor to article form
-- [ ] T086 [US3] Implement auto-save to drafts (debounced every 30 seconds)
-- [ ] T087 [US3] Add validation for article content (title length, required fields)
-- [ ] T088 [US3] Create POST /api/articles endpoint in app/api/articles/route.ts
-- [ ] T089 [US3] Add draft/publish status toggle to article form
-- [ ] T090 [US3] Implement slug generation from article title
+- [X] T083 [US3] Create article creation page in app/(protected)/articles/new/page.tsx
+- [X] T084 [US3] Create article form component in components/articles/article-form.tsx
+- [X] T085 [US3] Add title input, category selector, and editor to article form
+- [X] T086 [US3] Implement auto-save to drafts (debounced every 30 seconds)
+- [X] T087 [US3] Add validation for article content (title length, required fields)
+- [X] T088 [US3] Create POST /api/articles endpoint in app/api/articles/route.ts
+- [X] T089 [US3] Add draft/publish status toggle to article form
+- [X] T090 [US3] Implement slug generation from article title
 
 ### Article Editing
 
-- [ ] T091 [US3] Create article edit page in app/(protected)/articles/[id]/edit/page.tsx
-- [ ] T092 [US3] Load existing article data into editor form
-- [ ] T093 [US3] Create PATCH /api/articles/[id] endpoint in app/api/articles/[id]/route.ts
-- [ ] T094 [US3] Add permission checks (only author can edit)
-- [ ] T095 [US3] Update article metadata (updated_at, published_at) on save
-- [ ] T096 [US3] Add "Edit" button to article view page (visible to author only)
+- [X] T091 [US3] Create article edit page in app/(protected)/articles/[id]/edit/page.tsx
+- [X] T092 [US3] Load existing article data into editor form
+- [X] T093 [US3] Create PATCH /api/articles/[id] endpoint in app/api/articles/[id]/route.ts
+- [X] T094 [US3] Add permission checks (only author can edit)
+- [X] T095 [US3] Update article metadata (updated_at, published_at) on save
+- [X] T096 [US3] Add "Edit" button to article view page (visible to author only)
 
 ### Image Management
 
-- [ ] T097 [US3] Configure Supabase Storage bucket for article images
-- [ ] T098 [US3] Implement image upload with 5MB size limit and validation
-- [ ] T099 [US3] Add image compression before upload to optimize storage
-- [ ] T100 [US3] Handle image deletion when article is deleted
+- [X] T097 [US3] Configure Supabase Storage bucket for article images
+- [X] T098 [US3] Implement image upload with 5MB size limit and validation
+- [X] T099 [US3] Add image compression before upload to optimize storage
+- [X] T100 [US3] Handle image deletion when article is deleted
 
 **Checkpoint**: Users can create, edit, and publish articles with full rich text capabilities
 

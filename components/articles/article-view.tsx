@@ -1,22 +1,40 @@
+import Link from 'next/link';
 import { ArticleMetadata } from './article-metadata';
 import { ArticleRenderer } from '@/components/editor/article-renderer';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { ArticleWithRelations } from '@/lib/types/database';
 
 interface ArticleViewProps {
   article: ArticleWithRelations;
+  currentUserId?: string;
 }
 
-export function ArticleView({ article }: ArticleViewProps) {
+export function ArticleView({ article, currentUserId }: ArticleViewProps) {
+  const isAuthor = currentUserId && article.author_id === currentUserId;
+
   return (
     <article className="space-y-6">
       {/* Article Header */}
       <header className="space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">{article.title}</h1>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-gray-900">{article.title}</h1>
 
-        {article.excerpt && (
-          <p className="text-xl text-gray-600">{article.excerpt}</p>
-        )}
+            {article.excerpt && (
+              <p className="text-xl text-gray-600 mt-4">{article.excerpt}</p>
+            )}
+          </div>
+
+          {/* Edit button - only visible to author */}
+          {isAuthor && (
+            <Link href={`/articles/${article.id}/edit`}>
+              <Button variant="outline" className="flex-shrink-0">
+                Edit Article
+              </Button>
+            </Link>
+          )}
+        </div>
 
         <ArticleMetadata article={article} />
       </header>
