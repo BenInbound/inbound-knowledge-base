@@ -44,16 +44,16 @@ async function getCategoryHierarchy(categoryId: string): Promise<Category[]> {
   let currentId: string | null = categoryId;
 
   while (currentId) {
-    const { data: category } = await supabase
+    const result: { data: Category | null; error: any } = await supabase
       .from('categories')
       .select('*')
       .eq('id', currentId)
       .single();
 
-    if (!category) break;
+    if (result.error || !result.data) break;
 
-    hierarchy.unshift(category);
-    currentId = category.parent_id;
+    hierarchy.unshift(result.data);
+    currentId = result.data.parent_id;
   }
 
   return hierarchy;
@@ -95,6 +95,30 @@ async function getSubcategories(parentId: string): Promise<CategoryTreeNode[]> {
 async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[]> {
   const supabase = await createClient();
 
+  // First, get article IDs for this category
+  const { data: articleCategories, error: acError } = await supabase
+    .from('article_categories')
+    .select('article_id')
+    .eq('category_id', categoryId);
+
+  console.log('getCategoryArticles - categoryId:', categoryId);
+  console.log('getCategoryArticles - articleCategories:', articleCategories);
+  console.log('getCategoryArticles - error:', acError);
+
+  if (acError) {
+    console.error('Error fetching article categories:', acError);
+    return [];
+  }
+
+  if (!articleCategories || articleCategories.length === 0) {
+    console.log('getCategoryArticles - no article categories found');
+    return [];
+  }
+
+  const articleIds = articleCategories.map(ac => ac.article_id);
+  console.log('getCategoryArticles - articleIds:', articleIds);
+
+  // Then fetch the articles
   const { data: articles, error } = await supabase
     .from('articles')
     .select(`
@@ -108,13 +132,15 @@ async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[
       created_at,
       updated_at,
       view_count,
-      profiles!articles_author_id_fkey(full_name),
-      article_categories!inner(category_id)
+      profiles!articles_author_id_fkey(full_name)
     `)
     .eq('status', 'published')
-    .eq('article_categories.category_id', categoryId)
+    .in('id', articleIds)
     .order('published_at', { ascending: false })
     .limit(20);
+
+  console.log('getCategoryArticles - articles result:', articles);
+  console.log('getCategoryArticles - articles error:', error);
 
   if (error) {
     console.error('Error fetching articles:', error);

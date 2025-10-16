@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Search, PlusCircle, HelpCircle, User, LogOut } from 'lucide-react';
 import type { User as AuthUser } from '@/lib/types/auth';
@@ -9,6 +13,21 @@ interface MainNavProps {
 }
 
 export default function MainNav({ user }: MainNavProps) {
+  const router = useRouter();
+
+  // Keyboard shortcut for search (Cmd+K or Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        router.push('/search');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [router]);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-primary-200 bg-white shadow-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">

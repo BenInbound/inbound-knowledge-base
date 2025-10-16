@@ -133,28 +133,28 @@
 
 ### Article Viewing
 
-- [ ] T062 [US1] Create article view page in app/(protected)/articles/[id]/page.tsx
-- [ ] T063 [US1] Create article view component with rich text rendering in components/articles/article-view.tsx
-- [ ] T064 [US1] Implement TipTap read-only renderer for article content in components/editor/article-renderer.tsx
-- [ ] T065 [US1] Create article metadata component (author, dates, categories) in components/articles/article-metadata.tsx
-- [ ] T066 [US1] Add view counter increment logic to article page
+- [X] T062 [US1] Create article view page in app/(protected)/articles/[id]/page.tsx
+- [X] T063 [US1] Create article view component with rich text rendering in components/articles/article-view.tsx
+- [X] T064 [US1] Implement TipTap read-only renderer for article content in components/editor/article-renderer.tsx
+- [X] T065 [US1] Create article metadata component (author, dates, categories) in components/articles/article-metadata.tsx
+- [X] T066 [US1] Add view counter increment logic to article page
 
 ### Search Implementation
 
-- [ ] T067 [US1] Create search API endpoint in app/api/search/route.ts
-- [ ] T068 [US1] Implement full-text search using PostgreSQL search_content() function in API
-- [ ] T069 [US1] Create search page in app/(protected)/search/page.tsx
-- [ ] T070 [P] [US1] Create search input component with debounce in components/search/search-input.tsx
-- [ ] T071 [P] [US1] Create search results list component in components/search/search-results.tsx
-- [ ] T072 [P] [US1] Create search result card with highlighted snippets in components/search/result-card.tsx
-- [ ] T073 [US1] Add search functionality to main navigation header
+- [X] T067 [US1] Create search API endpoint in app/api/search/route.ts
+- [X] T068 [US1] Implement full-text search using PostgreSQL search_content() function in API
+- [X] T069 [US1] Create search page in app/(protected)/search/page.tsx
+- [X] T070 [P] [US1] Create search input component with debounce in components/search/search-input.tsx
+- [X] T071 [P] [US1] Create search results list component in components/search/search-results.tsx
+- [X] T072 [P] [US1] Create search result card with highlighted snippets in components/search/result-card.tsx
+- [X] T073 [US1] Add search functionality to main navigation header
 
 ### API Routes for Viewing
 
-- [ ] T074 [P] [US1] Create GET /api/articles endpoint for listing articles in app/api/articles/route.ts
-- [ ] T075 [P] [US1] Create GET /api/articles/[id] endpoint in app/api/articles/[id]/route.ts
-- [ ] T076 [P] [US1] Create GET /api/categories endpoint for listing categories in app/api/categories/route.ts
-- [ ] T077 [P] [US1] Create GET /api/categories/[id] endpoint in app/api/categories/[id]/route.ts
+- [X] T074 [P] [US1] Create GET /api/articles endpoint for listing articles in app/api/articles/route.ts
+- [X] T075 [P] [US1] Create GET /api/articles/[id] endpoint in app/api/articles/[id]/route.ts
+- [X] T076 [P] [US1] Create GET /api/categories endpoint for listing categories in app/api/categories/route.ts
+- [X] T077 [P] [US1] Create GET /api/categories/[id] endpoint in app/api/categories/[id]/route.ts
 
 **Checkpoint**: Users can browse, search, and view all published content - MVP is functional!
 
