@@ -1,0 +1,915 @@
+openapi: 3.1.0
+info:
+  title: Internal Knowledge Base API
+  version: 1.0.0
+  description: REST API for Inbound.no internal knowledge base platform
+  contact:
+    name: Inbound Development Team
+    email: dev@inbound.no
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://kb.inbound.no/api
+    description: Production
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Articles
+    description: Article management endpoints
+  - name: Categories
+    description: Category management endpoints
+  - name: Search
+    description: Search functionality
+  - name: Q&A
+    description: Questions and answers
+  - name: Import
+    description: Tettra data import
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token from auth.session
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error context
+
+    Article:
+      type: object
+      required:
+        - id
+        - title
+        - slug
+        - content
+        - status
+        - author
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        content:
+          type: object
+          description: TipTap JSON content
+        excerpt:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [draft, published, archived]
+        author:
+          $ref: '#/components/schemas/UserProfile'
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        published_at:
+          type: string
+          format: date-time
+          nullable: true
+        view_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ArticleInput:
+      type: object
+      required:
+        - title
+        - content
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        content:
+          type: object
+          description: TipTap JSON content
+        excerpt:
+          type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+          default: draft
+        category_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    Category:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - sort_order
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        description:
+          type: string
+          nullable: true
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        sort_order:
+          type: integer
+          default: 0
+        article_count:
+          type: integer
+          description: Number of articles in category
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          description: Child categories
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CategoryInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+        parent_id:
+          type: string
+          format: uuid
+          nullable: true
+        sort_order:
+          type: integer
+
+    SearchResult:
+      type: object
+      required:
+        - type
+        - id
+        - title
+        - rank
+      properties:
+        type:
+          type: string
+          enum: [article, question]
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        excerpt:
+          type: string
+          description: Text snippet with match context
+        rank:
+          type: number
+          format: float
+          description: Relevance score
+        created_at:
+          type: string
+          format: date-time
+        categories:
+          type: array
+          items:
+            type: string
+          description: Category names (articles only)
+
+    Question:
+      type: object
+      required:
+        - id
+        - title
+        - body
+        - author
+        - is_answered
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        body:
+          type: string
+        author:
+          $ref: '#/components/schemas/UserProfile'
+        is_answered:
+          type: boolean
+        answer_count:
+          type: integer
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    QuestionInput:
+      type: object
+      required:
+        - title
+        - body
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        body:
+          type: string
+          minLength: 1
+
+    Answer:
+      type: object
+      required:
+        - id
+        - question_id
+        - content
+        - author
+        - is_accepted
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        question_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        author:
+          $ref: '#/components/schemas/UserProfile'
+        is_accepted:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    AnswerInput:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+
+    UserProfile:
+      type: object
+      required:
+        - id
+        - full_name
+        - role
+      properties:
+        id:
+          type: string
+          format: uuid
+        full_name:
+          type: string
+        role:
+          type: string
+          enum: [admin, member]
+        avatar_url:
+          type: string
+          nullable: true
+
+    ImportJob:
+      type: object
+      required:
+        - id
+        - status
+        - file_name
+        - stats
+        - created_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        file_name:
+          type: string
+        stats:
+          type: object
+          properties:
+            total:
+              type: integer
+            success:
+              type: integer
+            failed:
+              type: integer
+        errors:
+          type: array
+          items:
+            type: object
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  # Articles
+  /articles:
+    get:
+      summary: List articles
+      tags: [Articles]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: category_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: author_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of articles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Article'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+
+    post:
+      summary: Create article
+      tags: [Articles]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleInput'
+      responses:
+        '201':
+          description: Article created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /articles/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: Get article by ID
+      tags: [Articles]
+      responses:
+        '200':
+          description: Article details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '404':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      summary: Update article
+      tags: [Articles]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArticleInput'
+      responses:
+        '200':
+          description: Article updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '403':
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Article not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete article
+      tags: [Articles]
+      responses:
+        '204':
+          description: Article deleted
+        '403':
+          description: Not authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /articles/slug/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+
+    get:
+      summary: Get article by slug
+      tags: [Articles]
+      responses:
+        '200':
+          description: Article details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+        '404':
+          description: Article not found
+
+  # Categories
+  /categories:
+    get:
+      summary: List categories
+      tags: [Categories]
+      parameters:
+        - name: parent_id
+          in: query
+          description: Filter by parent (null for root categories)
+          schema:
+            type: string
+            format: uuid
+            nullable: true
+        - name: include_tree
+          in: query
+          description: Include full category tree
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+    post:
+      summary: Create category
+      tags: [Categories]
+      description: Admin only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '403':
+          description: Admin access required
+
+  /categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: Get category by ID
+      tags: [Categories]
+      responses:
+        '200':
+          description: Category details with articles
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Category'
+                  - type: object
+                    properties:
+                      articles:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Article'
+
+    patch:
+      summary: Update category
+      tags: [Categories]
+      description: Admin only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+
+    delete:
+      summary: Delete category
+      tags: [Categories]
+      description: Admin only. Fails if category contains articles.
+      responses:
+        '204':
+          description: Category deleted
+        '400':
+          description: Category contains articles
+        '403':
+          description: Admin access required
+
+  # Search
+  /search:
+    get:
+      summary: Search articles and questions
+      tags: [Search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+            minLength: 2
+        - name: type
+          in: query
+          description: Filter by content type
+          schema:
+            type: string
+            enum: [article, question]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SearchResult'
+                  total:
+                    type: integer
+                  query:
+                    type: string
+
+  # Questions
+  /qa/questions:
+    get:
+      summary: List questions
+      tags: [Q&A]
+      parameters:
+        - name: is_answered
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Question'
+                  total:
+                    type: integer
+
+    post:
+      summary: Create question
+      tags: [Q&A]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionInput'
+      responses:
+        '201':
+          description: Question created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+
+  /qa/questions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: Get question with answers
+      tags: [Q&A]
+      responses:
+        '200':
+          description: Question details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+
+    patch:
+      summary: Update question
+      tags: [Q&A]
+      description: Author only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionInput'
+      responses:
+        '200':
+          description: Question updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+
+    delete:
+      summary: Delete question
+      tags: [Q&A]
+      description: Author only
+      responses:
+        '204':
+          description: Question deleted
+
+  /qa/questions/{id}/answers:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    post:
+      summary: Create answer
+      tags: [Q&A]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerInput'
+      responses:
+        '201':
+          description: Answer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Answer'
+
+  /qa/answers/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    patch:
+      summary: Update answer
+      tags: [Q&A]
+      description: Author only
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerInput'
+      responses:
+        '200':
+          description: Answer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Answer'
+
+    delete:
+      summary: Delete answer
+      tags: [Q&A]
+      description: Author only
+      responses:
+        '204':
+          description: Answer deleted
+
+  /qa/answers/{id}/accept:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    post:
+      summary: Accept answer
+      tags: [Q&A]
+      description: Question author only
+      responses:
+        '200':
+          description: Answer accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Answer'
+
+  # Import
+  /import/tettra:
+    post:
+      summary: Import Tettra data
+      tags: [Import]
+      description: Admin only. Accepts CSV or JSON export file.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                dry_run:
+                  type: boolean
+                  default: false
+      responses:
+        '201':
+          description: Import job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJob'
+        '403':
+          description: Admin access required
+
+  /import/jobs/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    get:
+      summary: Get import job status
+      tags: [Import]
+      description: Admin only
+      responses:
+        '200':
+          description: Import job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportJob'
