@@ -80,7 +80,7 @@ export function ArticleRenderer({ content }: ArticleRendererProps) {
         .article-content .ProseMirror p {
           margin-top: 0.5rem;
           margin-bottom: 0.5rem;
-          line-height: 1.75;
+          line-height: 1.45;
           color: #4b5563;
         }
 
