@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch profiles for all job creators
-    const creatorIds = [...new Set(jobs?.map(job => job.created_by) || [])];
+    const creatorIds = Array.from(new Set(jobs?.map(job => job.created_by) || []));
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, full_name, email')
