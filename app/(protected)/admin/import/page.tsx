@@ -45,8 +45,10 @@ export default function ImportPage() {
     setImportedItems([]);
   };
 
-  const handleStartImport = async () => {
+  const handleStartImport = async (overrideDryRun?: boolean) => {
     if (!selectedFile) return;
+
+    const effectiveDryRun = overrideDryRun !== undefined ? overrideDryRun : isDryRun;
 
     setImportStatus('processing');
     setImportErrors([]);
@@ -54,7 +56,7 @@ export default function ImportPage() {
 
     const formData = new FormData();
     formData.append('file', selectedFile);
-    formData.append('dryRun', isDryRun.toString());
+    formData.append('dryRun', effectiveDryRun.toString());
 
     try {
       const response = await fetch('/api/import/tettra', {
@@ -196,7 +198,7 @@ export default function ImportPage() {
                 <Button variant="outline" onClick={handleReset}>
                   Cancel
                 </Button>
-                <Button onClick={handleStartImport}>
+                <Button onClick={() => handleStartImport()}>
                   {isDryRun ? 'Validate Import' : 'Start Import'}
                 </Button>
               </div>
@@ -239,7 +241,7 @@ export default function ImportPage() {
                 <Button
                   onClick={() => {
                     setIsDryRun(false);
-                    setImportStatus('idle');
+                    handleStartImport(false);
                   }}
                 >
                   Proceed with Import
