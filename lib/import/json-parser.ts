@@ -41,7 +41,11 @@ function parseArrayFormat(data: any[]): ParsedImportData {
 
   // Detect data type from first item
   const firstItem = data[0];
-  const isArticleData = 'title' in firstItem && ('content' in firstItem || 'body' in firstItem);
+
+  // Check for standard format or Tettra export format
+  const isArticleData =
+    ('title' in firstItem && ('content' in firstItem || 'body' in firstItem)) ||
+    ('page_title' in firstItem && 'html' in firstItem);
 
   if (isArticleData) {
     const articles = data.map(item => parseArticleObject(item));
@@ -73,15 +77,26 @@ function parseObjectFormat(data: any): ParsedImportData {
  * Parse a single article object from JSON
  */
 function parseArticleObject(obj: any): TettraArticle {
+  // Build categories array from Tettra's category_name and subcategory_name
+  let categories;
+  if (obj.category_name || obj.subcategory_name) {
+    categories = [obj.category_name, obj.subcategory_name].filter(Boolean);
+  } else {
+    categories = parseCategories(obj.categories || obj.category || obj.tags);
+  }
+
+  // Skip deleted pages (deleted_at is not null)
+  const isDeleted = obj.deleted_at && obj.deleted_at !== null;
+
   return {
     id: obj.id || obj.article_id || obj.tettra_id,
-    title: obj.title || obj.name || '',
-    content: obj.content || obj.body || obj.text || '',
-    categories: parseCategories(obj.categories || obj.category || obj.tags),
-    author: obj.author || obj.created_by || obj.author_name,
+    title: obj.page_title || obj.title || obj.name || '',
+    content: obj.html || obj.content || obj.body || obj.text || '',
+    categories,
+    author: obj.owner_name || obj.author || obj.created_by || obj.author_name,
     created_at: obj.created_at || obj.created || obj.date,
     updated_at: obj.updated_at || obj.updated || obj.modified_at,
-    published: parseBoolean(obj.published || obj.status || obj.state),
+    published: isDeleted ? false : parseBoolean(obj.published || obj.status || obj.state),
   };
 }
 
