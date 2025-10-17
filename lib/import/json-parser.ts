@@ -49,7 +49,11 @@ function parseArrayFormat(data: any[]): ParsedImportData {
 
   if (isArticleData) {
     const articles = data.map(item => parseArticleObject(item));
-    return { articles, categories: [] };
+
+    // Extract categories from Tettra articles
+    const categories = extractCategoriesFromArticles(data);
+
+    return { articles, categories };
   } else if ('name' in firstItem) {
     const categories = data.map(item => parseCategoryObject(item));
     return { articles: [], categories };
@@ -66,11 +70,58 @@ function parseObjectFormat(data: any): ParsedImportData {
     ? data.articles.map((item: any) => parseArticleObject(item))
     : [];
 
-  const categories = Array.isArray(data.categories)
+  let categories = Array.isArray(data.categories)
     ? data.categories.map((item: any) => parseCategoryObject(item))
     : [];
 
+  // If no explicit categories provided, extract from articles
+  if (categories.length === 0 && articles.length > 0 && Array.isArray(data.articles)) {
+    categories = extractCategoriesFromArticles(data.articles);
+  }
+
   return { articles, categories };
+}
+
+/**
+ * Extract unique categories from Tettra article data
+ * Handles category_name (parent) and subcategory_name (child) fields
+ */
+function extractCategoriesFromArticles(articleData: any[]): TettraCategory[] {
+  const categoryMap = new Map<string, TettraCategory>();
+  const subcategoryParents = new Map<string, string>(); // subcategory -> parent
+
+  // First pass: collect all categories and their relationships
+  for (const item of articleData) {
+    const categoryName = item.category_name;
+    const subcategoryName = item.subcategory_name;
+
+    // Add parent category
+    if (categoryName && !categoryMap.has(categoryName)) {
+      categoryMap.set(categoryName, {
+        name: categoryName,
+        sort_order: 0,
+      });
+    }
+
+    // Track subcategory-parent relationship
+    if (subcategoryName && categoryName) {
+      subcategoryParents.set(subcategoryName, categoryName);
+    }
+  }
+
+  // Second pass: add subcategories with parent references
+  const subcategoryEntries = Array.from(subcategoryParents.entries());
+  for (const [subcategoryName, parentName] of subcategoryEntries) {
+    if (!categoryMap.has(subcategoryName)) {
+      categoryMap.set(subcategoryName, {
+        name: subcategoryName,
+        parent: parentName,
+        sort_order: 0,
+      });
+    }
+  }
+
+  return Array.from(categoryMap.values());
 }
 
 /**
