@@ -14,7 +14,7 @@ function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
   const hasChildren = category.children.length > 0;
   const indent = category.depth * 16; // 16px per level
   const isActive = pathname === `/categories/${category.id}`;
-  const [isExpanded, setIsExpanded] = useState(true); // Start expanded by default
+  const [isExpanded, setIsExpanded] = useState(false); // Start collapsed by default
 
   const toggleExpanded = (e: React.MouseEvent) => {
     e.preventDefault();
