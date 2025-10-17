@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
-    // Fetch import jobs with creator info
+    // Fetch import jobs
     const { data: jobs, error: jobsError, count } = await supabase
       .from('import_jobs')
-      .select('*, profiles!import_jobs_created_by_fkey(full_name, email)', { count: 'exact' })
+      .select('*', { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -55,22 +55,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Fetch profiles for all job creators
+    const creatorIds = [...new Set(jobs?.map(job => job.created_by) || [])];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', creatorIds);
+
+    // Create profile lookup map
+    const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+
     // Format response
-    const formattedJobs = jobs.map((job: any) => ({
-      id: job.id,
-      status: job.status,
-      fileName: job.file_name,
-      stats: job.stats,
-      createdBy: job.profiles
-        ? {
-            fullName: job.profiles.full_name,
-            email: job.profiles.email,
-          }
-        : null,
-      createdAt: job.created_at,
-      completedAt: job.completed_at,
-      hasErrors: job.errors && job.errors.length > 0,
-    }));
+    const formattedJobs = jobs?.map((job: any) => {
+      const creator = profileMap.get(job.created_by);
+      return {
+        id: job.id,
+        status: job.status,
+        fileName: job.file_name,
+        stats: job.stats,
+        createdBy: creator
+          ? {
+              fullName: creator.full_name,
+              email: creator.email,
+            }
+          : null,
+        createdAt: job.created_at,
+        completedAt: job.completed_at,
+        hasErrors: job.errors && job.errors.length > 0,
+      };
+    }) || [];
 
     return NextResponse.json({
       jobs: formattedJobs,
