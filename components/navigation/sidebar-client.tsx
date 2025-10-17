@@ -27,7 +27,7 @@ function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
       <div className="flex items-center">
         <Link
           href={`/categories/${category.id}`}
-          className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors group flex-1 ${
+          className={`flex items-start gap-2 px-3 py-2 text-sm rounded-md transition-colors group flex-1 ${
             isActive
               ? 'bg-primary-100 text-primary-900'
               : 'text-primary-700 hover:bg-primary-100 hover:text-primary-900'
@@ -37,7 +37,7 @@ function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
           {hasChildren ? (
             <button
               onClick={toggleExpanded}
-              className="h-4 w-4 flex-shrink-0 flex items-center justify-center hover:bg-primary-200 rounded"
+              className="h-4 w-4 mt-0.5 flex-shrink-0 flex items-center justify-center hover:bg-primary-200 rounded"
               aria-label={isExpanded ? 'Collapse' : 'Expand'}
             >
               {isExpanded ? (
@@ -47,10 +47,10 @@ function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
               )}
             </button>
           ) : (
-            <div className="h-4 w-4 flex-shrink-0" /> // Spacer for alignment
+            <div className="h-4 w-4 mt-0.5 flex-shrink-0" /> // Spacer for alignment
           )}
-          <FolderOpen className="h-4 w-4 text-primary-500 flex-shrink-0" />
-          <span className="flex-1 truncate font-medium">{category.name}</span>
+          <FolderOpen className="h-4 w-4 mt-0.5 text-primary-500 flex-shrink-0" />
+          <span className="flex-1 font-medium break-words">{category.name}</span>
           {category.article_count > 0 && (
             <span className="text-xs text-primary-500 bg-primary-100 px-2 py-0.5 rounded-full">
               {category.article_count}
@@ -77,7 +77,7 @@ export function SidebarClient({ categories }: { categories: CategoryTreeNode[] }
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-primary-200 p-4">
+    <aside className="w-80 min-h-screen bg-white border-r border-primary-200 p-4">
       <div className="space-y-6">
         {/* Categories Section */}
         <div>
