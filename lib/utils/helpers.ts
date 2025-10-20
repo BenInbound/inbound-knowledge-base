@@ -137,14 +137,15 @@ export function generateExcerpt(
 
 /**
  * Debounce a function call
+ * Returns a debounced function with a cancel() method to cancel pending calls
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
-): (...args: Parameters<T>) => void {
+): ((...args: Parameters<T>) => void) & { cancel: () => void } {
   let timeout: NodeJS.Timeout | null = null;
 
-  return function executedFunction(...args: Parameters<T>) {
+  const executedFunction = function (...args: Parameters<T>) {
     const later = () => {
       timeout = null;
       func(...args);
@@ -155,6 +156,16 @@ export function debounce<T extends (...args: any[]) => any>(
     }
     timeout = setTimeout(later, wait);
   };
+
+  // Add cancel method to clear any pending timeout
+  executedFunction.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+
+  return executedFunction as typeof executedFunction & { cancel: () => void };
 }
 
 /**

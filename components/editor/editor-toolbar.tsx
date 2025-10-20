@@ -63,7 +63,7 @@ export function EditorToolbar({ editor, onImageUpload }: EditorToolbarProps) {
   };
 
   return (
-    <div className="border border-gray-300 rounded-t-lg bg-gray-50 p-2 flex flex-wrap gap-1">
+    <div className="sticky top-0 z-10 border border-gray-300 rounded-t-lg bg-gray-50 p-2 flex flex-wrap gap-1 shadow-sm">
       {/* Text formatting */}
       <div className="flex gap-1 border-r border-gray-300 pr-2">
         <ToolbarButton

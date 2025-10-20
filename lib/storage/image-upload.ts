@@ -167,3 +167,111 @@ export function getImageUrl(path: string): string {
 
   return publicUrl;
 }
+
+/**
+ * Type definition for TipTap article content structure
+ */
+interface ArticleContentNode {
+  type: string;
+  attrs?: {
+    src?: string;
+    [key: string]: unknown;
+  };
+  content?: ArticleContentNode[];
+}
+
+interface ArticleContent {
+  type: string;
+  content?: ArticleContentNode[];
+}
+
+/**
+ * Extracts storage paths from TipTap article content (JSONB)
+ * Recursively traverses the content tree to find all image nodes
+ * and extract their storage paths from the src URLs
+ */
+export function extractImagePathsFromContent(content: ArticleContent | null): string[] {
+  if (!content || !content.content) {
+    return [];
+  }
+
+  const paths: string[] = [];
+
+  function traverse(node: ArticleContentNode) {
+    // Check if this node is an image with a src attribute
+    if (node.type === 'image' && node.attrs?.src) {
+      // Extract the storage path from the full URL
+      // Format: https://{project}.supabase.co/storage/v1/object/public/article-images/{path}
+      // We need to extract just the {path} part after 'article-images/'
+      const match = node.attrs.src.match(/article-images\/(.+)$/);
+      if (match && match[1]) {
+        paths.push(match[1]);
+      }
+    }
+
+    // Recursively traverse nested content (for lists, blockquotes, etc.)
+    if (node.content && Array.isArray(node.content)) {
+      node.content.forEach(traverse);
+    }
+  }
+
+  // Start traversal from root content nodes
+  content.content.forEach(traverse);
+
+  return paths;
+}
+
+/**
+ * Deletes all images associated with an article
+ * This should be called BEFORE deleting the article from the database
+ *
+ * @param articleId - The UUID of the article
+ * @param supabaseClient - Server-side Supabase client (must have auth context)
+ * @returns Promise that resolves when images are deleted (or logs errors)
+ */
+export async function deleteArticleImages(
+  articleId: string,
+  supabaseClient: ReturnType<typeof createClient>
+): Promise<void> {
+  try {
+    // Fetch article content
+    const { data: article, error: fetchError } = await supabaseClient
+      .from('articles')
+      .select('content')
+      .eq('id', articleId)
+      .single();
+
+    if (fetchError) {
+      console.error(`Failed to fetch article ${articleId} for image cleanup:`, fetchError);
+      return;
+    }
+
+    if (!article) {
+      console.warn(`Article ${articleId} not found for image cleanup`);
+      return;
+    }
+
+    // Extract image paths from content
+    const paths = extractImagePathsFromContent(article.content as ArticleContent);
+
+    if (paths.length === 0) {
+      // No images to delete
+      return;
+    }
+
+    // Delete images from storage
+    const { error: deleteError } = await supabaseClient.storage
+      .from(STORAGE_BUCKET)
+      .remove(paths);
+
+    if (deleteError) {
+      console.error(`Failed to delete images for article ${articleId}:`, deleteError);
+      // Log but don't throw - article deletion should still proceed
+    } else {
+      console.log(`Successfully deleted ${paths.length} image(s) for article ${articleId}`);
+    }
+  } catch (error) {
+    console.error(`Unexpected error during image cleanup for article ${articleId}:`, error);
+    // Don't throw - allow article deletion to proceed even if image cleanup fails
+  }
+}

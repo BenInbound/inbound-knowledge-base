@@ -102,22 +102,16 @@ async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[
     .select('article_id')
     .eq('category_id', categoryId);
 
-  console.log('getCategoryArticles - categoryId:', categoryId);
-  console.log('getCategoryArticles - articleCategories:', articleCategories);
-  console.log('getCategoryArticles - error:', acError);
-
   if (acError) {
     console.error('Error fetching article categories:', acError);
     return [];
   }
 
   if (!articleCategories || articleCategories.length === 0) {
-    console.log('getCategoryArticles - no article categories found');
     return [];
   }
 
   const articleIds = articleCategories.map(ac => ac.article_id);
-  console.log('getCategoryArticles - articleIds:', articleIds);
 
   // Then fetch the articles (without profile join)
   const { data: articles, error } = await supabase
@@ -138,9 +132,6 @@ async function getCategoryArticles(categoryId: string): Promise<ArticleListItem[
     .in('id', articleIds)
     .order('published_at', { ascending: false })
     .limit(20);
-
-  console.log('getCategoryArticles - articles result:', articles);
-  console.log('getCategoryArticles - articles error:', error);
 
   if (error) {
     console.error('Error fetching articles:', error);

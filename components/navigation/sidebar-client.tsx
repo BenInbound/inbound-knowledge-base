@@ -123,9 +123,9 @@ export function SidebarClient({ categories }: { categories: CategoryTreeNode[] }
               </li>
               <li>
                 <Link
-                  href="/articles/new"
+                  href="/articles/drafts"
                   className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
-                    pathname === '/articles/new'
+                    pathname === '/articles/drafts'
                       ? 'bg-primary-100 text-primary-900'
                       : 'text-primary-700 hover:bg-primary-100 hover:text-primary-900'
                   }`}

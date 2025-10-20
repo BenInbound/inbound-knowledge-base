@@ -44,7 +44,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch article with categories
+  // Fetch current user's profile to get their role
+  let currentUserRole: 'admin' | 'member' | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    currentUserRole = profile?.role || null;
+  }
+
+  // Fetch article with categories (any status - we'll check permissions below)
   const { data: article, error } = await supabase
     .from('articles')
     .select(
@@ -56,11 +68,21 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     `
     )
     .eq('id', id)
-    .eq('status', 'published')
     .single();
 
   if (error || !article) {
     notFound();
+  }
+
+  // Check permissions: published articles are visible to all,
+  // but draft/archived articles are only visible to author or admin
+  if (article.status !== 'published') {
+    const isAuthor = user && article.author_id === user.id;
+    const isAdmin = currentUserRole === 'admin';
+
+    if (!isAuthor && !isAdmin) {
+      notFound();
+    }
   }
 
   // Fetch author profile separately
@@ -103,7 +125,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <Breadcrumbs items={breadcrumbItems} />
-      <ArticleView article={articleWithRelations} currentUserId={user?.id} />
+      <ArticleView
+        article={articleWithRelations}
+        currentUserId={user?.id}
+        currentUserRole={currentUserRole}
+      />
     </div>
   );
 }

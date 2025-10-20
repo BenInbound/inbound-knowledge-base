@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { updateArticleSchema } from '@/lib/validation/schemas';
 import type { ArticleUpdate } from '@/lib/types/database';
+import { deleteArticleImages } from '@/lib/storage/image-upload';
 
 interface RouteParams {
   params: Promise<{
@@ -112,10 +113,20 @@ export async function PATCH(
       );
     }
 
-    // Permission check: Only the author can edit the article
-    if (existingArticle.author_id !== user.id) {
+    // Fetch user's profile to check role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    // Permission check: Author or admin can edit the article
+    const isAuthor = existingArticle.author_id === user.id;
+    const isAdmin = profile?.role === 'admin';
+
+    if (!isAuthor && !isAdmin) {
       return NextResponse.json(
-        { error: 'Forbidden - Only the author can edit this article' },
+        { error: 'Forbidden - Only the author or an admin can edit this article' },
         { status: 403 }
       );
     }
@@ -265,15 +276,29 @@ export async function DELETE(
       );
     }
 
-    // Permission check: Only the author can delete the article
-    if (existingArticle.author_id !== user.id) {
+    // Fetch user's profile to check role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    // Permission check: Author or admin can delete the article
+    const isAuthor = existingArticle.author_id === user.id;
+    const isAdmin = profile?.role === 'admin';
+
+    if (!isAuthor && !isAdmin) {
       return NextResponse.json(
-        { error: 'Forbidden - Only the author can delete this article' },
+        { error: 'Forbidden - Only the author or an admin can delete this article' },
         { status: 403 }
       );
     }
 
-    // Delete the article (database trigger will handle image cleanup)
+    // Clean up article images from storage before deleting the article
+    // This replaces the previous database trigger approach which doesn't work on remote Supabase
+    await deleteArticleImages(id, supabase);
+
+    // Delete the article from database
     const { error: deleteError } = await supabase
       .from('articles')
       .delete()

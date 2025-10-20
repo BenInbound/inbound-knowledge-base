@@ -14,7 +14,7 @@ export const metadata = {
   description: 'Edit an existing article',
 };
 
-async function getArticle(id: string, userId: string) {
+async function getArticle(id: string, userId: string, userRole: 'admin' | 'member' | null) {
   const supabase = await createClient();
 
   // Fetch the article
@@ -35,8 +35,11 @@ async function getArticle(id: string, userId: string) {
     return null;
   }
 
-  // Check if the current user is the author
-  if (article.author_id !== userId) {
+  // Check if the current user is the author OR an admin
+  const isAuthor = article.author_id === userId;
+  const isAdmin = userRole === 'admin';
+
+  if (!isAuthor && !isAdmin) {
     return null;
   }
 
@@ -77,7 +80,19 @@ async function getCurrentUser() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return user;
+  if (!user) return null;
+
+  // Fetch user's profile to get their role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  return {
+    id: user.id,
+    role: profile?.role || null,
+  };
 }
 
 export default async function EditArticlePage({ params }: EditArticlePageProps) {
@@ -88,9 +103,9 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
     redirect('/login');
   }
 
-  const article = await getArticle(id, user.id);
+  const article = await getArticle(id, user.id, user.role);
 
-  // If article not found or user is not the author, show 404
+  // If article not found or user is not the author/admin, show 404
   if (!article) {
     notFound();
   }

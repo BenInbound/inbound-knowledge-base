@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Input } from '@/components/ui/input';
@@ -132,7 +132,7 @@ export function ArticleForm({
         slug,
         content,
         excerpt: excerpt || null,
-        status: 'draft' as ArticleStatus, // Auto-save always saves as draft
+        status: status, // Preserve current status during auto-save
         category_ids: selectedCategories,
       };
 
@@ -165,12 +165,13 @@ export function ArticleForm({
     title,
     content,
     excerpt,
+    status,
     selectedCategories,
     initialData,
   ]);
 
   // Debounced auto-save (30 seconds)
-  const debouncedAutoSave = useCallback(debounce(performAutoSave, 30000), [performAutoSave]);
+  const debouncedAutoSave = useMemo(() => debounce(performAutoSave, 30000), [performAutoSave]);
 
   // Trigger auto-save when content changes
   useEffect(() => {
@@ -184,6 +185,9 @@ export function ArticleForm({
     if (!validateForm()) {
       return;
     }
+
+    // Cancel any pending auto-save to prevent it from overwriting our manual save
+    debouncedAutoSave.cancel();
 
     setIsSaving(true);
     setErrors({});
@@ -221,14 +225,18 @@ export function ArticleForm({
         }
 
         const result = await response.json();
+
+        // Update local state to match what was saved
+        setStatus(saveStatus);
+        setHasUnsavedChanges(false);
+
         toast.success(
           saveStatus === 'published' ? 'Article published!' : 'Draft saved successfully!'
         );
-        setHasUnsavedChanges(false);
 
-        // Redirect to article page after successful save
+        // Hard redirect to article page after successful save (forces fresh data)
         setTimeout(() => {
-          router.push(`/articles/${result.data.id}`);
+          window.location.href = `/articles/${result.data.id}`;
         }, 1000);
       }
     } catch (error) {
