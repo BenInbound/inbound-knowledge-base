@@ -209,6 +209,14 @@ export async function POST(request: NextRequest) {
     // Validate with Zod schema - will throw ZodError if validation fails
     const { title, slug, content, excerpt, status, category_ids } = createArticleSchema.parse(body);
 
+    // Server-side validation: Published articles must have at least one category
+    if (status === 'published' && (!category_ids || category_ids.length === 0)) {
+      return NextResponse.json(
+        { error: 'Published articles must have at least one category' },
+        { status: 400 }
+      );
+    }
+
     // Generate slug if not provided
     const finalSlug = slug || slugify(title);
 

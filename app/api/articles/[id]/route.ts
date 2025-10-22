@@ -149,6 +149,32 @@ export async function PATCH(
 
     const { title, slug, content, excerpt, status, category_ids } = validationResult.data;
 
+    // Server-side validation: Published articles must have at least one category
+    if (status === 'published') {
+      // If category_ids is provided and empty, reject
+      if (category_ids !== undefined && category_ids.length === 0) {
+        return NextResponse.json(
+          { error: 'Published articles must have at least one category' },
+          { status: 400 }
+        );
+      }
+
+      // If category_ids is not provided, check existing categories
+      if (category_ids === undefined) {
+        const { data: existingCategories } = await supabase
+          .from('article_categories')
+          .select('category_id')
+          .eq('article_id', id);
+
+        if (!existingCategories || existingCategories.length === 0) {
+          return NextResponse.json(
+            { error: 'Published articles must have at least one category. Please select categories before publishing.' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Prepare article update data
     const updateData: ArticleUpdate = {
       updated_at: new Date().toISOString(),
