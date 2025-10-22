@@ -243,7 +243,7 @@ export default function CategoryManagementClient({
         <div>
           <h1 className="text-3xl font-bold text-primary-900">Category Management</h1>
           <p className="text-primary-600 mt-2">
-            Organize your content with hierarchical categories (max 3 levels)
+            Organize your content with hierarchical categories (max 5 levels)
           </p>
         </div>
         <Button onClick={() => setIsCreateModalOpen(true)}>
@@ -276,7 +276,7 @@ export default function CategoryManagementClient({
           <DialogHeader>
             <DialogTitle>Create New Category</DialogTitle>
             <DialogDescription>
-              Add a new category to organize your content. Categories can be nested up to 3 levels deep.
+              Add a new category to organize your content. Categories can be nested up to 5 levels deep.
             </DialogDescription>
           </DialogHeader>
           <CategoryForm

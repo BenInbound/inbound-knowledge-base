@@ -54,17 +54,18 @@ export default function CategoryForm({
     return 1 + getCategoryDepth(cat.parent_id);
   };
 
-  // Get available parent categories (excluding self and descendants, max depth 2)
+  // Get available parent categories (excluding self and descendants, max depth 5)
   const getAvailableParents = (): Category[] => {
     return categories.filter(cat => {
       // Can't be its own parent
       if (category && cat.id === category.id) return false;
 
-      // Check if this category would exceed max depth
+      // Check if adding a child to this category would exceed max depth
       const depth = getCategoryDepth(cat.id);
+      const childDepth = depth + 1;
 
-      // If depth is already 2 (root -> parent -> child), can't add more children
-      if (depth >= 2) return false;
+      // If child would be depth 6+, can't use this as parent
+      if (childDepth > 5) return false;
 
       return true;
     });
@@ -89,11 +90,13 @@ export default function CategoryForm({
       newErrors.name = 'A category with this name already exists';
     }
 
-    // Validate depth
+    // Validate depth - ensure new category won't exceed max depth of 5
     if (formData.parent_id) {
       const parentDepth = getCategoryDepth(formData.parent_id);
-      if (parentDepth >= 2) {
-        newErrors.parent_id = 'Maximum nesting depth (3 levels) would be exceeded';
+      const newCategoryDepth = parentDepth + 1;
+
+      if (newCategoryDepth > 5) {
+        newErrors.parent_id = 'Maximum nesting depth (5 levels) would be exceeded';
       }
     }
 
@@ -187,7 +190,7 @@ export default function CategoryForm({
           <p className="text-sm text-red-600">{errors.parent_id}</p>
         )}
         <p className="text-xs text-primary-600">
-          Maximum nesting depth: 3 levels
+          Maximum nesting depth: 5 levels
         </p>
       </div>
 

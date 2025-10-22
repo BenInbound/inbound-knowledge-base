@@ -252,31 +252,33 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         </div>
 
         {articles.length > 0 ? (
-          <div className="space-y-4">
-            {articles.map((article) => (
-              <Link key={article.id} href={`/articles/${article.id}`}>
-                <Card className="p-6 hover:shadow-lg hover:border-primary-300 transition-all cursor-pointer group">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-primary-900 group-hover:text-primary-700 transition-colors mb-2">
-                        {article.title}
-                      </h3>
-                      {article.excerpt && (
-                        <p className="text-sm text-primary-600 line-clamp-2 mb-3">
-                          {article.excerpt}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-xs text-primary-500">
-                        <span>By {article.author_name}</span>
-                        <span>•</span>
-                        <span>{formatRelativeTime(article.published_at || article.created_at)}</span>
-                        <span>•</span>
-                        <span>{article.view_count} views</span>
+          <div>
+            {articles.map((article, index) => (
+              <div key={article.id} style={{ marginBottom: index === articles.length - 1 ? 0 : '16px' }}>
+                <Link href={`/articles/${article.id}`}>
+                  <Card className="p-6 hover:shadow-lg hover:border-primary-300 transition-all cursor-pointer group">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-primary-900 group-hover:text-primary-700 transition-colors mb-2">
+                          {article.title}
+                        </h3>
+                        {article.excerpt && (
+                          <p className="text-sm text-primary-600 line-clamp-2 mb-3">
+                            {article.excerpt}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-4 text-xs text-primary-500">
+                          <span>By {article.author_name}</span>
+                          <span>•</span>
+                          <span>{formatRelativeTime(article.published_at || article.created_at)}</span>
+                          <span>•</span>
+                          <span>{article.view_count} views</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              </Link>
+                  </Card>
+                </Link>
+              </div>
             ))}
           </div>
         ) : (

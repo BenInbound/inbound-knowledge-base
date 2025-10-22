@@ -125,7 +125,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
         userId={user.id}
         initialData={article}
         categories={categories}
-        autoSave={true}
+        autoSave={false}
       />
     </div>
   );

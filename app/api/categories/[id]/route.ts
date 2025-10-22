@@ -257,7 +257,7 @@ export async function PATCH(
         let depth = 1;
         let currentParentId = parentCategory.parent_id;
 
-        while (currentParentId && depth < 3) {
+        while (currentParentId && depth < 10) {
           const { data: ancestor } = await supabase
             .from('categories')
             .select('parent_id')
@@ -272,10 +272,11 @@ export async function PATCH(
           }
         }
 
-        // Maximum depth is 3 (root -> level 1 -> level 2)
-        if (depth >= 2) {
+        // Maximum depth is 5 (root = 1, child = 2, ..., level 5 = 5)
+        // If parent is depth 5, new child would be depth 6 (not allowed)
+        if (depth >= 5) {
           return NextResponse.json(
-            { error: 'Maximum category nesting depth (3 levels) would be exceeded' },
+            { error: 'Maximum category nesting depth (5 levels) would be exceeded' },
             { status: 400 }
           );
         }

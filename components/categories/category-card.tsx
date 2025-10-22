@@ -55,7 +55,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
                 <div className="flex items-center gap-1">
                   <FolderOpen className="w-4 h-4" />
                   <span>
-                    {formatCompactNumber(category.subcategory_count)} subcategor{category.subcategory_count === 1 ? 'y' : 'ies'}
+                    {formatCompactNumber(category.subcategory_count)} sub cat{category.subcategory_count === 1 ? '' : 's'}
                   </span>
                 </div>
               )}

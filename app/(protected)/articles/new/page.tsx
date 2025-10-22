@@ -52,7 +52,7 @@ export default async function NewArticlePage() {
         </p>
       </div>
 
-      <ArticleForm userId={user.id} categories={categories} autoSave={true} />
+      <ArticleForm userId={user.id} categories={categories} autoSave={false} />
     </div>
   );
 }

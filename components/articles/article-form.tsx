@@ -74,6 +74,10 @@ export function ArticleForm({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  // Track created article ID and slug for autosave (prevents creating multiple drafts)
+  const [createdArticleId, setCreatedArticleId] = useState<string | undefined>(initialData?.id);
+  const [createdArticleSlug, setCreatedArticleSlug] = useState<string | undefined>(initialData?.slug);
 
   // Track changes
   useEffect(() => {
@@ -93,7 +97,7 @@ export function ArticleForm({
   }, [title, content, excerpt, status, selectedCategories, initialData]);
 
   // Validate form
-  const validateForm = useCallback((): boolean => {
+  const validateForm = useCallback((saveStatus?: ArticleStatus): boolean => {
     const newErrors: FormErrors = {};
 
     // Title validation
@@ -115,18 +119,28 @@ export function ArticleForm({
       newErrors.content = 'Article content is required';
     }
 
+    // Category validation - only required when publishing
+    if (saveStatus === 'published' && selectedCategories.length === 0) {
+      newErrors.categories = 'Please select at least one category before publishing';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [title, content]);
+  }, [title, content, selectedCategories]);
 
   // Auto-save handler (debounced)
   const performAutoSave = useCallback(async () => {
-    if (!autoSave || !hasUnsavedChanges || !title.trim()) {
+    // Guard against concurrent autosaves
+    if (!autoSave || !hasUnsavedChanges || !title.trim() || isAutoSaving) {
       return;
     }
 
+    setIsAutoSaving(true);
+
     try {
-      const slug = initialData?.slug || slugify(title);
+      // Use stored slug if available, otherwise generate from title
+      const slug = createdArticleSlug || initialData?.slug || slugify(title);
+
       const articleData = {
         title,
         slug,
@@ -139,11 +153,14 @@ export function ArticleForm({
       // Validate against schema
       createArticleSchema.parse(articleData);
 
+      // Use createdArticleId if available (prevents creating multiple drafts)
+      const articleId = createdArticleId || initialData?.id;
+
       // Call API
       const response = await fetch(
-        initialData?.id ? `/api/articles/${initialData.id}` : '/api/articles',
+        articleId ? `/api/articles/${articleId}` : '/api/articles',
         {
-          method: initialData?.id ? 'PATCH' : 'POST',
+          method: articleId ? 'PATCH' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(articleData),
         }
@@ -153,11 +170,21 @@ export function ArticleForm({
         throw new Error('Failed to save article');
       }
 
+      const result = await response.json();
+
+      // Store the article ID and slug from first save for subsequent autosaves
+      if (!articleId && result.data?.id) {
+        setCreatedArticleId(result.data.id);
+        setCreatedArticleSlug(result.data.slug);
+      }
+
       toast.success('Draft auto-saved');
       setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Auto-save error:', error);
       // Silent failure for auto-save
+    } finally {
+      setIsAutoSaving(false);
     }
   }, [
     autoSave,
@@ -168,6 +195,9 @@ export function ArticleForm({
     status,
     selectedCategories,
     initialData,
+    createdArticleId,
+    createdArticleSlug,
+    isAutoSaving,
   ]);
 
   // Debounced auto-save (30 seconds)
@@ -182,7 +212,7 @@ export function ArticleForm({
 
   // Handle manual save
   const handleSave = async (saveStatus: ArticleStatus = 'draft') => {
-    if (!validateForm()) {
+    if (!validateForm(saveStatus)) {
       return;
     }
 
@@ -193,7 +223,9 @@ export function ArticleForm({
     setErrors({});
 
     try {
-      const slug = initialData?.slug || slugify(title);
+      // Use stored slug if available, otherwise generate from title
+      const slug = createdArticleSlug || initialData?.slug || slugify(title);
+
       const articleData = {
         title,
         slug,
@@ -209,11 +241,14 @@ export function ArticleForm({
       if (onSave) {
         await onSave(articleData);
       } else {
+        // Use createdArticleId if available (prevents creating multiple drafts)
+        const articleId = createdArticleId || initialData?.id;
+
         // Default save behavior
         const response = await fetch(
-          initialData?.id ? `/api/articles/${initialData.id}` : '/api/articles',
+          articleId ? `/api/articles/${articleId}` : '/api/articles',
           {
-            method: initialData?.id ? 'PATCH' : 'POST',
+            method: articleId ? 'PATCH' : 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(articleData),
           }
@@ -225,6 +260,12 @@ export function ArticleForm({
         }
 
         const result = await response.json();
+
+        // Store the article ID and slug from first save for subsequent saves
+        if (!articleId && result.data?.id) {
+          setCreatedArticleId(result.data.id);
+          setCreatedArticleSlug(result.data.slug);
+        }
 
         // Update local state to match what was saved
         setStatus(saveStatus);
@@ -311,7 +352,9 @@ export function ArticleForm({
 
       {/* Category selector */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Categories (optional)</label>
+        <label className="block text-sm font-medium text-gray-700">
+          Categories <span className="text-xs text-gray-500">(required for publishing)</span>
+        </label>
         <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto">
           {categories.length === 0 ? (
             <p className="text-sm text-gray-500">No categories available</p>
