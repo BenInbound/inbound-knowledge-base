@@ -12,6 +12,8 @@ import type { CategoryTreeNode } from '@/lib/types/database';
 function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
   const pathname = usePathname();
   const hasChildren = category.children.length > 0;
+  const hasArticles = category.articles && category.articles.length > 0;
+  const hasContent = hasChildren || hasArticles; // Show chevron if has children or articles
   const indent = category.depth * 16; // 16px per level
   const isActive = pathname === `/categories/${category.id}`;
   const [isExpanded, setIsExpanded] = useState(false); // Start collapsed by default
@@ -34,7 +36,7 @@ function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
           }`}
           style={{ paddingLeft: `${12 + indent}px` }}
         >
-          {hasChildren ? (
+          {hasContent ? (
             <button
               onClick={toggleExpanded}
               className="h-4 w-4 mt-0.5 flex-shrink-0 flex items-center justify-center hover:bg-primary-200 rounded"
@@ -59,9 +61,37 @@ function CategoryTreeItem({ category }: { category: CategoryTreeNode }) {
         </Link>
       </div>
 
-      {hasChildren && isExpanded && (
+      {isExpanded && (
         <ul className="space-y-1">
-          {category.children.map((child) => (
+          {/* Show articles first */}
+          {category.articles && category.articles.length > 0 && (
+            <>
+              {category.articles.map((article) => {
+                const articleIndent = (category.depth + 1) * 16;
+                const isArticleActive = pathname === `/articles/${article.id}`;
+                return (
+                  <li key={article.id}>
+                    <Link
+                      href={`/articles/${article.id}`}
+                      className={`flex items-start gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+                        isArticleActive
+                          ? 'bg-blue-50 text-blue-900'
+                          : 'text-primary-600 hover:bg-primary-50 hover:text-primary-900'
+                      }`}
+                      style={{ paddingLeft: `${12 + articleIndent}px` }}
+                    >
+                      <div className="h-4 w-4 mt-0.5 flex-shrink-0" /> {/* Spacer for alignment */}
+                      <FileText className="h-4 w-4 mt-0.5 text-blue-500 flex-shrink-0" />
+                      <span className="flex-1 break-words">{article.title}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </>
+          )}
+
+          {/* Show subcategories after articles */}
+          {hasChildren && category.children.map((child) => (
             <CategoryTreeItem key={child.id} category={child} />
           ))}
         </ul>

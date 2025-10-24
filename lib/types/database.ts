@@ -184,12 +184,22 @@ export interface CategoryWithCount extends Category {
 }
 
 /**
+ * Sidebar article item (minimal info for sidebar display)
+ */
+export interface SidebarArticle {
+  id: string;
+  title: string;
+  slug: string;
+}
+
+/**
  * Category tree node for hierarchical display
  */
 export interface CategoryTreeNode extends Category {
   children: CategoryTreeNode[];
   article_count: number;
   depth: number; // 0 = root, 1 = first level, etc.
+  articles?: SidebarArticle[]; // Articles in this category
 }
 
 /**

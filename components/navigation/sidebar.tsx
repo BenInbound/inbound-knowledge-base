@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
-import type { CategoryTreeNode } from '@/lib/types/database';
+import type { CategoryTreeNode, SidebarArticle } from '@/lib/types/database';
 import { SidebarClient } from './sidebar-client';
 
 /**
  * Build hierarchical category tree from flat list
  */
-function buildCategoryTree(categories: any[]): CategoryTreeNode[] {
+function buildCategoryTree(categories: any[], articlesMap: Map<string, SidebarArticle[]>): CategoryTreeNode[] {
   const categoryMap = new Map<string, CategoryTreeNode>();
   const rootCategories: CategoryTreeNode[] = [];
 
@@ -16,6 +16,7 @@ function buildCategoryTree(categories: any[]): CategoryTreeNode[] {
       children: [],
       article_count: cat.article_count || 0,
       depth: 0,
+      articles: articlesMap.get(cat.id) || [],
     });
   });
 
@@ -77,7 +78,42 @@ async function getCategories(): Promise<CategoryTreeNode[]> {
     article_count: cat.article_categories?.[0]?.count || 0,
   })) || [];
 
-  return buildCategoryTree(categoriesWithCounts);
+  // Fetch all published articles with their categories
+  const { data: articles } = await supabase
+    .from('articles')
+    .select('id, title, slug')
+    .eq('status', 'published')
+    .order('title');
+
+  // Fetch article-category relationships
+  const { data: articleCategories } = await supabase
+    .from('article_categories')
+    .select('article_id, category_id');
+
+  // Build map of category_id -> articles
+  const articlesMap = new Map<string, SidebarArticle[]>();
+
+  if (articles && articleCategories) {
+    // Create article lookup map
+    const articleMap = new Map(articles.map(a => [a.id, a]));
+
+    // Group articles by category
+    articleCategories.forEach((ac) => {
+      const article = articleMap.get(ac.article_id);
+      if (article) {
+        if (!articlesMap.has(ac.category_id)) {
+          articlesMap.set(ac.category_id, []);
+        }
+        articlesMap.get(ac.category_id)!.push({
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+        });
+      }
+    });
+  }
+
+  return buildCategoryTree(categoriesWithCounts, articlesMap);
 }
 
 /**
