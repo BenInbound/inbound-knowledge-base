@@ -46,7 +46,10 @@ export function EditorToolbar({ editor, onImageUpload }: EditorToolbarProps) {
       type="button"
       variant={isActive ? 'secondary' : 'ghost'}
       size="icon"
-      onClick={onClick}
+      onMouseDown={(e) => {
+        e.preventDefault(); // Prevent button from taking focus
+        onClick();
+      }}
       disabled={disabled}
       title={title}
       className="h-8 w-8"
