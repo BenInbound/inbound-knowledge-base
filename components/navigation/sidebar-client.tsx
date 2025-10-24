@@ -107,7 +107,7 @@ export function SidebarClient({ categories }: { categories: CategoryTreeNode[] }
   const pathname = usePathname();
 
   return (
-    <aside className="w-80 min-h-screen bg-white border-r border-primary-200 p-4">
+    <aside className="fixed left-0 top-16 z-40 w-80 h-[calc(100vh-4rem)] bg-white border-r border-primary-200 p-4 overflow-y-auto">
       <div className="space-y-6">
         {/* Categories Section */}
         <div>

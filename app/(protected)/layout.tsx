@@ -29,13 +29,13 @@ export default async function ProtectedLayout({
 
       {/* Two-column layout: Sidebar + Main content */}
       <div className="flex">
-        {/* Sidebar */}
+        {/* Sidebar - Fixed position */}
         <ErrorBoundaryWrapper>
           <Sidebar />
         </ErrorBoundaryWrapper>
 
-        {/* Main Content Area */}
-        <main className="flex-1 p-8">
+        {/* Main Content Area - With left margin to account for fixed sidebar */}
+        <main className="flex-1 ml-80 p-8">
           <ErrorBoundaryWrapper>
             {children}
           </ErrorBoundaryWrapper>
