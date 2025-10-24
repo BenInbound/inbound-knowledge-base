@@ -72,11 +72,61 @@ async function getCategories(): Promise<CategoryTreeNode[]> {
     return [];
   }
 
+  // Get current user and their role
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let isAdmin = false;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    isAdmin = profile?.role === 'admin';
+  }
+
   // Map article counts
-  const categoriesWithCounts = categories?.map((cat) => ({
+  let categoriesWithCounts = categories?.map((cat) => ({
     ...cat,
     article_count: cat.article_categories?.[0]?.count || 0,
   })) || [];
+
+  // Filter out "Papirkurv" category and its subcategories for non-admin users
+  if (!isAdmin) {
+    // Find the "Papirkurv" category ID
+    const papirkurvCategory = categoriesWithCounts.find(
+      (cat) => cat.name === 'Papirkurv'
+    );
+
+    if (papirkurvCategory) {
+      // Recursively find all descendant category IDs
+      const getDescendantIds = (parentId: string, categories: any[]): string[] => {
+        const childIds = categories
+          .filter((cat) => cat.parent_id === parentId)
+          .map((cat) => cat.id);
+
+        const descendantIds = [...childIds];
+        childIds.forEach((childId) => {
+          descendantIds.push(...getDescendantIds(childId, categories));
+        });
+
+        return descendantIds;
+      };
+
+      const excludeIds = new Set([
+        papirkurvCategory.id,
+        ...getDescendantIds(papirkurvCategory.id, categoriesWithCounts),
+      ]);
+
+      // Filter out "Papirkurv" and all its descendants
+      categoriesWithCounts = categoriesWithCounts.filter(
+        (cat) => !excludeIds.has(cat.id)
+      );
+    }
+  }
 
   // Fetch all published articles with their categories
   const { data: articles } = await supabase
